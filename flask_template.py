@@ -92,7 +92,7 @@ def userprofile(user = None):
     user = session['email'].split('@')[0]
     cursor = db.cursor()
     cursor.execute(
-        "select user.last_name, user.first_name, user.email, user_address.street_no, user_address.street, user_address.city, user_address.state, user_address.zip, user_address.country, credit_card.credit_card_number from user join user_address using(email) join credit_card using (address_id)")
+        "select user.last_name, user.first_name, user.email, user_address.street_no, user_address.street, user_address.city, user_address.state, user_address.zip, user_address.country, credit_card.credit_card_number from user join user_address using(email) join credit_card using (address_id) where email = %s", (session['email']))
     user = cursor.fetchall()
     delete = SubmitField("Delete Credit Card")
     edit = SubmitField("Edit Profile")
@@ -138,7 +138,7 @@ class editccForm(Form):
     expiration_month = StringField('Expiration Month', validators=[Required()])
     submit = SubmitField('Submit')
 
-@app.route('/editcc')
+@app.route('/editcc', methods=['GET','POST'])
 def editcc():
     form = editccForm()
     #verification and struggle bus sql things
@@ -146,6 +146,28 @@ def editcc():
         return "Form posted"
     elif request.method=="GET":
         return render_template('editcc.html', form=form)
+
+@app.route('/editprof', methods=['GET','POST'])
+def editprof():
+    form = editprofForm()
+    #verification and struggle bus sql things
+    if request.method=="POST":
+        return "Form posted"
+    elif request.method=="GET":
+        return render_template('editprof.html', form=form)
+
+class editprofForm(Form):
+    first_name = StringField('First Name', validators=[Required()])
+    last_name = StringField('Last Name', validators=[Required()])
+    email = StringField('E-Mail', validators=[Required()])
+    password = StringField('Password', validators=[Required()])
+    street_no = StringField('Street Number', validators=[Required()])
+    street = StringField('Street', validators=[Required()])
+    city = StringField('City', validators=[Required()])
+    state = StringField('State', validators=[Required()])
+    zipcode = StringField('Zip Code', validators=[Required()])
+    country = StringField('Country', validators=[Required()])
+    submit = SubmitField('Submit')
 
 class addattractionForm(Form):
     name = StringField('Name', validators=[Required()])
@@ -174,6 +196,15 @@ class addattractionForm(Form):
     SunClosed = StringField('Closing hour on Sunday', validators=[Required()])
     submit = SubmitField('Add Attraction')
 
+@app.route('/addattraction', methods=['GET','POST'])
+def addattraction():
+    form = addattractionForm()
+    #verification and struggle bus sql things
+    if request.method=="POST":
+        return "Form posted"
+    elif request.method=="GET":
+        return render_template('ADMINONLYaddattractionpage.html', form=form)
+
 class registrationForm(Form):
     name = StringField('Name', validators=[Required()])
     street_no = StringField('Street Number', validators=[Required()])
@@ -183,16 +214,6 @@ class registrationForm(Form):
     zipcode = StringField('Zip Code', validators=[Required()])
     country = StringField('Country', validators=[Required()])
     submit = SubmitField('Create Account')
-
-
-@app.route('/addattraction', methods=['GET','POST'])
-def addattraction():
-    form = addattractionForm()
-    #verification and struggle bus sql things
-    if request.method=="POST":
-        return "Form posted"
-    elif request.method=="GET":
-        return render_template('ADMINONLYaddattractionpage.html', form=form)
 
 @app.route('/registration', methods=['GET','POST'])
 def registration():
