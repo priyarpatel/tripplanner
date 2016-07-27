@@ -122,9 +122,9 @@ def attractioncontrols():
                            columns=column_names, rows=attractions)
 
 
-@app.route('/activitysearch')
-def activitysearch():
-    return render_template('activitysearch.html')
+@app.route('/attractionsearch')
+def attrsearch():
+    return render_template('attractionsearch.html')
 
 class addattractionForm():
     name = StringField('name', validators=[Required()])
