@@ -51,12 +51,15 @@ def home():
         admin = '1'
     else:
         admin = None
-    cursor.execute(
-        "select trip_id from trip " +
-        "join activity using (trip_id) " +
-        "where start_date >= CURDATE() and email = %s limit 1",
-        (session['email']))
-    trip = cursor.fetchone()[0]
+    try:
+        cursor.execute(
+            "select trip_id from trip " +
+            "join activity using (trip_id) " +
+            "where start_date >= CURDATE() and email = %s limit 1",
+            (session['email']))
+        trip = cursor.fetchone()[0]
+    except:
+        trip = None
     cursor.close()
     return render_template('home.html', trips=trips,
                            user=session['customer_name'], admuser = admin,
@@ -75,7 +78,7 @@ def trip(tripid = None):
         "start_time as Start, stop_time as Ends, price as Price " +
         "from trip join activity using (trip_id) " +
         "join attraction using (attraction_id) where trip_id = %s",
-        ('1'))
+        (tripid))
     trips = cursor.fetchall()
     cursor.execute("select attraction.city from trip join activity using (trip_id) " +
         "join attraction using (attraction_id) where trip_id = %s limit 1", ('1'))
@@ -126,6 +129,10 @@ def attractioncontrols():
 @app.route('/attractionsearch')
 def attrsearch():
     return render_template('attractionsearch.html')
+
+@app.route('/deletecc')
+def deletecc():
+    return render_template('deletecc.html')
 
 class addattractionForm(Form):
     name = StringField('Name', validators=[Required()])
