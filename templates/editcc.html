@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %} Edit Credit Card Information {% endblock %}
+
+{% block content %}
+
+<html>
+    <head>
+      <title> Edit Credit Card Information </title>
+    </head>
+    <h1>Edit Credit Card Information</h1>
+    <body>
+        <form action ="team3-data.sql">
+          Name on Card:<br>
+          <input type="text" name="name_on_card"><br>
+          Credit Card Number:<br>
+          <input type="bigint" name="credit_card_number"><br>
+          CVV:<br>
+          <input type="int(3)" name="cvv"><br>
+          Expiration Year:<br>
+          <input type="int(4)" name="exp_yr"><br>
+          Expiration Month:<br>
+          <input type="int(2)" name="exp_mo"><br>
+        </form>
+    </body>
+</html>
+
+{% endblock %}
