@@ -7,7 +7,7 @@ from wtforms.validators import Required
 import pymysql
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'hard to guess string'
+app.config['SECRET_KEY'] = 'Taste the Rainbow'
 bootstrap = Bootstrap(app)
 
 class LoginForm(Form):
@@ -98,7 +98,8 @@ def userprofile(user = None):
     edit = SubmitField("Edit Profile")
     column_names = [desc[0] for desc in cursor.description]
     cursor.close()
-    return render_template('userprofile.html', columns= column_names, name = user)
+    return render_template('userprofile.html', columns=column_names, name = user)
+
 
 @app.route('/usercontrols')
 def usercontrols():
@@ -154,12 +155,11 @@ class addattractionForm():
     # SatClosed = StringField('Closing hour on Saturday', validators=[Required()])
     # SunOpen = StringField('Opening hour on Sunday', validators=[Required()])
     # SunClosed = StringField('Closing hour on Sunday', validators=[Required()])
-    #submit = SubmitField('Add Attraction')
+    submit = SubmitField('Add Attraction')
 
 @app.route('/addattraction', methods=['GET','POST'])
 def addattraction():
     form = addattractionForm()
-    if request.method=="POST" and form.validate_on_submit():
     #     cursor = db.cursor()
     #     print("form.email.data=" + form.email.data)
     #     cursor.execute("select email, first_name, last_name " +
@@ -173,8 +173,10 @@ def addattraction():
     #         return redirect(url_for('home'))
     #     else:
     #         flash('Email address not found in user database.')
-        return redirect(url_for('attractioncontrol'))
-    return render_template('ADMINONLYaddattractionpage.html', form=form)
+    if request.method=="POST":
+        return "Form posted"
+    elif request.method=="GET":
+        return render_template('ADMINONLYaddattractionpage.html', form=form)
 
 @app.route('/browse_db')
 def browse_db():
