@@ -95,7 +95,7 @@ def userprofile(user = None):
     edit = SubmitField("Edit Profile")
     column_names=[desc[0] for desc in cursor.description]
     cursor.close()
-    return render_template('userprofile.html', name = user)
+    return render_template('userprofile.html', columns= column_names, name = user)
 
 @app.route('/usercontrols')
 def usercontrols():
