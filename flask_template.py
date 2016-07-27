@@ -89,13 +89,13 @@ def userprofile(user = None):
     user = session['email'].split('@')[0]
     cursor = db.cursor()
     cursor.execute(
-        "select user.last_name, suser.first_name, user.email, user_address.street_no, user_address.street, user_address.city, user_address.state, user_address.zip, user_address.country, credit_card.credit_card_number from user join user_address using(email) join credit_card using (address_id)")
+        "select user.last_name, user.first_name, user.email, user_address.street_no, user_address.street, user_address.city, user_address.state, user_address.zip, user_address.country, credit_card.credit_card_number from user join user_address using(email) join credit_card using (address_id)")
     user = cursor.fetchall()
     delete = SubmitField("Delete Credit Card")
     edit = SubmitField("Edit Profile")
-    column_names=[desc[0] for desc in cursor.description]
+    column_names = [desc[0] for desc in cursor.description]
     cursor.close()
-    return render_template('userprofile.html', name = user)
+    return render_template('userprofile.html', columns= column_names, name = user)
 
 @app.route('/usercontrols')
 def usercontrols():
