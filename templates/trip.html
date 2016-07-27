@@ -1,12 +1,26 @@
 {% extends "base.html" %}
-{% block title %} Trip {% endblock %}
+{% block title %} Trip Details {% endblock %}
 
 {% block content %}
 
 <html>
-    <head> <title> Trip </title></head>
+    <head> <title> Trip Details </title></head>
     <body>
-        <p> Help me </p>
+        <h1> My trip to {{city}} </h1>
+        <table>
+          <tr>
+              <th>Attraction</th><th>Date</th><th>Starts</th><th>Ends</th>
+              <th>Price</th>
+          </tr>
+          {% for trip in trips %}
+            <tr>
+              {% for field in trip %}
+                <td>{{field}}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </table>
+
     </body>
 </html>
 

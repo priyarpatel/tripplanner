@@ -60,7 +60,19 @@ def createtrip():
 
 @app.route('/trip')
 def trip():
-    return render_template('trip.html')
+    cursor = db.cursor()
+    cursor.execute(
+        "select attraction.name as Attraction, activity_date as Date, " +
+        "start_time as Start, stop_time as Ends, price as Price " +
+        "from trip join activity using (trip_id) " +
+        "join attraction using (attraction_id) where trip_id = %s",
+        ('1'))
+    trips = cursor.fetchall()
+    cursor.execute("select attraction.city from trip join activity using (trip_id) " +
+        "join attraction using (attraction_id) where trip_id = %s limit 1", ('1'))
+    trip_city = cursor.fetchone()[0]
+    cursor.close()
+    return render_template('trip.html', trips = trips, city = trip_city)
 
 @app.route('/userprofile/<user>')
 @app.route('/userprofile')
@@ -159,6 +171,6 @@ def table(table):
 
 if __name__ == '__main__':
     dbname = 'team3'
-    db = pymysql.connect(host='localhost',user='root', passwd='',db=dbname)
+    db = pymysql.connect(host='localhost',user='root', passwd='0000',db=dbname)
     app.run(debug=True)
     db.close()

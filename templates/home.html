@@ -14,13 +14,14 @@
     <h1>Upcoming Trips</h1>
     <table>
       <tr>
-          <th>City</th><th>Date</th>
+          <th>City</th><th>Date</th><th>View details</th>
       </tr>
       {% for trip in trips %}
         <tr>
           {% for field in trip %}
             <td>{{field}}</td>
           {% endfor %}
+          <td> <a href = "trip"> View trip</a></td>
         </tr>
       {% endfor %}
     </table>
