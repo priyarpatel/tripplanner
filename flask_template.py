@@ -39,8 +39,8 @@ def index():
 def home():
     cursor = db.cursor()
     cursor.execute(
-        "select city as City, trip_date as Date from trip " +
-        "where trip_date >= CURDATE() and email = %s",
+        "select city as City, start_date as Date from trip " +
+        "where start_date >= CURDATE() and email = %s",
         (session['email']))
     Trip = namedtuple('Trip', ['city', 'date'])
     trips = [Trip._make(row) for row in cursor.fetchall()]
