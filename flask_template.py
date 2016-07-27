@@ -130,9 +130,22 @@ def attractioncontrols():
 def attrsearch():
     return render_template('attractionsearch.html')
 
-@app.route('/deletecc')
-def deletecc():
-    return render_template('deletecc.html')
+class editccForm(Form):
+    name_on_card = StringField('Name', validators=[Required()])
+    credit_card_number = StringField('Credit Card Number', validators=[Required()])
+    CVV = StringField('CVV', validators=[Required()])
+    expiration_year = StringField('Expiration Year', validators=[Required()])
+    expiration_month = StringField('Expiration Month', validators=[Required()])
+    submit = SubmitField('Submit')
+
+@app.route('/editcc')
+def editcc():
+    form = editccForm()
+    #verification and struggle bus sql things
+    if request.method=="POST":
+        return "Form posted"
+    elif request.method=="GET":
+        return render_template('editcc.html', form=form)
 
 class addattractionForm(Form):
     name = StringField('Name', validators=[Required()])
