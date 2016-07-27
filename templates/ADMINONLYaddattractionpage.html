@@ -2,16 +2,8 @@
 {% block title %}Add Attraction{% endblock %}
 
 {% block content %}
-	<form action="{{ url_for('contact') }}" method=post>
-
- 		{{ form.name.label }}
-    	{{ form.name }}
- 
-    	{{ form.street_no.label }}
-    	{{ form.street_no }}
- 
-    	{{ form.submit }}
-  </form>
-  {% endblock %}
-
+<h1>Add Attraction</h1>
+{% import "bootstrap/wtf.html" as wtf %}
+{{ wtf.quick_form(form) }}
+{% endblock %}
 
