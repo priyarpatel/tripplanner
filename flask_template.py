@@ -133,7 +133,7 @@ def attrsearch():
 @app.route('/deletecc')
 def deletecc():
     return render_template('deletecc.html')
-    
+
 class addattractionForm(Form):
     name = StringField('Name', validators=[Required()])
     street_no = StringField('Street Number', validators=[Required()])
