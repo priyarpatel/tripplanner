@@ -44,9 +44,15 @@ def home():
         (session['email']))
     Trip = namedtuple('Trip', ['city', 'date'])
     trips = [Trip._make(row) for row in cursor.fetchall()]
+    cursor.execute("select is_admin from user where email = %s",
+        (session['email']))
+    if cursor.fetchone()[0] == 1:
+        admin = '1'
+    else:
+        admin = None
     cursor.close()
     return render_template('home.html', trips=trips,
-                           user=session['customer_name'])
+                           user=session['customer_name'], admuser = admin)
 
 @app.route('/createtrip')
 def createtrip():
