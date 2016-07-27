@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Browse Tables{% endblock %}
+
+{% block content %}
+<h1>{{dbname}} Tables</h1>
+<p>Click on a table to see its data.</p>
+<ul>
+  {% for table in tables %}
+    <li><a href="/table/{{table}}">{{table}}</a></li>
+  {% endfor %}
+</ul>
+</table>
+{% endblock %}
