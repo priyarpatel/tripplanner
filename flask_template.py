@@ -39,7 +39,8 @@ def index():
 def home():
     cursor = db.cursor()
     cursor.execute(
-        "select city as City, start_date as Date from trip " +
+        "select distinct city as City, start_date as Date from trip " +
+        "join activity using (trip_id) " +
         "where start_date >= CURDATE() and email = %s",
         (session['email']))
     Trip = namedtuple('Trip', ['city', 'date'])
@@ -50,16 +51,24 @@ def home():
         admin = '1'
     else:
         admin = None
+    cursor.execute(
+        "select trip_id from trip " +
+        "join activity using (trip_id) " +
+        "where start_date >= CURDATE() and email = %s limit 1",
+        (session['email']))
+    trip = cursor.fetchone()[0]
     cursor.close()
     return render_template('home.html', trips=trips,
-                           user=session['customer_name'], admuser = admin)
+                           user=session['customer_name'], admuser = admin,
+                           tid = trip)
 
 @app.route('/createtrip')
 def createtrip():
     return render_template('createtrip.html')
 
+@app.route('/trip/<tripid>')
 @app.route('/trip')
-def trip():
+def trip(tripid = None):
     cursor = db.cursor()
     cursor.execute(
         "select attraction.name as Attraction, activity_date as Date, " +
@@ -104,6 +113,10 @@ def attractioncontrols():
     return render_template('ADMINONLYattractioncontrolpage.html',
                            columns=column_names, rows=attractions)
 
+
+@app.route('/activitysearch')
+def activitysearch():
+    return render_template('activitysearch.html')
 
 class addattractionForm():
     name = StringField('name', validators=[Required()])
@@ -172,6 +185,6 @@ def table(table):
 
 if __name__ == '__main__':
     dbname = 'team3'
-    db = pymysql.connect(host='localhost',user='root', passwd='',db=dbname)
+    db = pymysql.connect(host='localhost',user='root', passwd='0000',db=dbname)
     app.run(debug=True)
     db.close()
