@@ -3,6 +3,13 @@
 
 {% block content %}
 <h1>Add Attraction</h1>
+<body>
+<form >
+First name:  <input type="text" name="first_name" />
+<br>
+Last name:  <input type="text" name="last_name" />
+</form>
+</body>
 {% import "bootstrap/wtf.html" as wtf %}
 {{ wtf.quick_form(form) }}
 {% endblock %}
