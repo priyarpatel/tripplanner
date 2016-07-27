@@ -161,6 +161,17 @@ class addattractionForm(Form):
     SunClosed = StringField('Closing hour on Sunday', validators=[Required()])
     submit = SubmitField('Add Attraction')
 
+class registrationForm(Form):
+    name = StringField('Name', validators=[Required()])
+    street_no = StringField('Street Number', validators=[Required()])
+    street = StringField('Street', validators=[Required()])
+    city = StringField('City', validators=[Required()])
+    state = StringField('State', validators=[Required()])
+    zipcode = StringField('Zip Code', validators=[Required()])
+    country = StringField('Country', validators=[Required()])
+    submit = SubmitField('Create Account')
+
+
 @app.route('/addattraction', methods=['GET','POST'])
 def addattraction():
     form = addattractionForm()
@@ -169,6 +180,15 @@ def addattraction():
         return "Form posted"
     elif request.method=="GET":
         return render_template('ADMINONLYaddattractionpage.html', form=form)
+
+@app.route('/registration', methods=['GET','POST'])
+def registration():
+    form = addattractionForm()
+    #SQL insert statements
+    if request.method=="POST":
+        return "Form posted"
+    elif request.method=="GET":
+        return render_template('registration.html', form=form)
 
 @app.route('/browse_db')
 def browse_db():
