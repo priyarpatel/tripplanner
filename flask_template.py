@@ -92,7 +92,7 @@ def addattraction():
     #validate statements
     return render_template('ADMINONLYaddattractionpage.html', form=form)
 
-class addattractionForm():
+def addattractionForm():
     name = StringField('Name', validators=[Required()])
     street_no = StringField('Street Number', validators=[Required()])
     street = StringField('Street', validators=[Required()])
@@ -118,34 +118,6 @@ class addattractionForm():
     SunOpen = StringField('Opening hour on Sunday', validators=[Required()])
     SunClosed = StringField('Closing hour on Sunday', validators=[Required()])
     submit = SubmitField('Add Attraction')
-
-##def addattractionForm():
-##    name = StringField('Name', validators=[Required()])
-##    street_no = StringField('Street Number', validators=[Required()])
-##    street = StringField('Street', validators=[Required()])
-##    city = StringField('City', validators=[Required()])
-##    state = StringField('State', validators=[Required()])
-##    zipcode = StringField('Zip Code', validators=[Required()])
-##    country = StringField('Country', validators=[Required()])
-##    description = StringField('Description', validators=[Required()])
-##    nearestpubtransit = StringField('Nearest Public Transit', validators=[Required()])
-##    resreq = StringField('Reservation Required (Y/N)', validators=[Required()])
-##    MonOpen = StringField('Opening hour on Monday', validators=[Required()])
-##    MonClosed = StringField('Closing hour on Monday', validators=[Required()])
-##    TuesOpen = StringField('Opening hour on Tuesday', validators=[Required()])
-##    TuesClosed = StringField('Closing hour on Tuesday', validators=[Required()])
-##    WedOpen = StringField('Opening hour on Wednesday', validators=[Required()])
-##    WedClosed = StringField('Closing hour on Wednesday', validators=[Required()])
-##    ThursOpen = StringField('Opening hour on Thursday', validators=[Required()])
-##    ThursClosed = StringField('Closing hour on Thursday', validators=[Required()])
-##    FriOpen = StringField('Opening hour on Friday', validators=[Required()])
-##    FriClosed = StringField('Closing hour on Friday', validators=[Required()])
-##    SatOpen = StringField('Opening hour on Saturday', validators=[Required()])
-##    SatClosed = StringField('Closing hour on Saturday', validators=[Required()])
-##    SunOpen = StringField('Opening hour on Sunday', validators=[Required()])
-##    SunClosed = StringField('Closing hour on Sunday', validators=[Required()])
-##    submit = SubmitField('Add Attraction')
-
 
 @app.route('/browse_db')
 def browse_db():
