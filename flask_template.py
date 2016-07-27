@@ -136,15 +136,15 @@ def deletecc():
     
 class addattractionForm(Form):
     name = StringField('Name', validators=[Required()])
-    street_no = BooleanField('Street Number', validators=[Required()])
+    street_no = StringField('Street Number', validators=[Required()])
     street = StringField('Street', validators=[Required()])
     city = StringField('City', validators=[Required()])
     state = StringField('State', validators=[Required()])
-    zipcode = BooleanField('Zip Code', validators=[Required()])
+    zipcode = StringField('Zip Code', validators=[Required()])
     country = StringField('Country', validators=[Required()])
     description = StringField('Description', validators=[Required()])
     nearestpubtransit = StringField('Nearest Public Transit', validators=[Required()])
-    resreq = StringField('Reservation Required (Y/N)', validators=[Required()])
+    resreq = BooleanField('Reservation Required', validators=[Required()])
     MonOpen = StringField('Opening hour on Monday', validators=[Required()])
     MonClosed = StringField('Closing hour on Monday', validators=[Required()])
     TuesOpen = StringField('Opening hour on Tuesday', validators=[Required()])
