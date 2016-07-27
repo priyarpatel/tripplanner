@@ -10,12 +10,15 @@
 		{% for column in columns %}
 			<th>{{column}}</th>
 		{% endfor %}
+		<th>edit</th><th>delete</th>
 	</tr>
 	{% for row in rows %}
 		<tr>
 			{% for cell in row %}
 				<td>{{cell}}</td>
 			{% endfor %}
+			<td><a href="home">Edit</a></td>
+			<td><a href="attractioncontrols">Delete</a></td>
 		</tr>
 	{% endfor %}
 </table>

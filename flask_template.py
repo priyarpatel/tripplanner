@@ -97,12 +97,13 @@ def usercontrols():
 def attractioncontrols():
     cursor = db.cursor()
     cursor.execute(
-        "select name, city, country from attraction order by name asc")
-    rows=cursor.fetchall()
+        "select attraction_id, name, city, country from attraction order by attraction_id asc")
+    attractions=cursor.fetchall()
     column_names=[desc[0] for desc in cursor.description]
     cursor.close()
     return render_template('ADMINONLYattractioncontrolpage.html',
-                           columns=column_names, rows=rows)
+                           columns=column_names, rows=attractions)
+
 
 class addattractionForm():
     name = StringField('name', validators=[Required()])
