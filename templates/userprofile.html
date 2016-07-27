@@ -1,10 +1,25 @@
 {% extends "base.html" %}
-{% block title %} {{name}}'s Profile'{% endblock %}
+
+{% block title %}
+{% if name %}
+{{name}}'s Profile
+{% else %}
+ My Profile
+ {% endif %}
+{% endblock %}
 
 {% block content %}
 
 <html>
-    <head> <title> Profile </title></head>
+    <head>
+        <title>
+            {% if name %}
+            {{name}}'s Profile
+            {% else %}
+             My Profile
+             {% endif %}
+        </title>
+    </head>
     <body>
         <p> Help me </p>
     </body>

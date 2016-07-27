@@ -57,9 +57,10 @@ def trip():
     return render_template('trip.html')
 
 @app.route('/userprofile/<user>')
-def userprofile(user):
+@app.route('/userprofile')
+def userprofile(user = None):
     user = session['email'].split('@')[0]
-    return render_template('userprofile.html', name=session['customer_name'])
+    return render_template('userprofile.html', name = user)
 
 @app.route('/usercontrols')
 def usercontrols():
@@ -166,6 +167,6 @@ def table(table):
 
 if __name__ == '__main__':
     dbname = 'team3'
-    db = pymysql.connect(host='localhost',user='root', passwd='',db=dbname)
+    db = pymysql.connect(host='localhost',user='root', passwd='cs4400',db=dbname)
     app.run(debug=True)
     db.close()
