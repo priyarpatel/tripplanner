@@ -1,15 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Add Attraction{% endblock %}
 
-{% block content %}
-<h1>Add Attraction</h1>
-<body>
-<form >
-First name:  <input type="text" name="first_name" />
-<br>
-Last name:  <input type="text" name="last_name" />
+{% from "formhelper.html" import render_field %}
+<form method=post action="/attractioncontrol">
+  <dl>
+    {{ render_field(name) }}
+    {{ render_field(street_no) }}
+  </dl>
+  <p><input type=submit value=Add Attraction>
 </form>
-</body>
-{% import "bootstrap/wtf.html" as wtf %}
-{{ wtf.quick_form(form) }}
-{% endblock %}
+
