@@ -167,6 +167,6 @@ def table(table):
 
 if __name__ == '__main__':
     dbname = 'team3'
-    db = pymysql.connect(host='localhost',user='root', passwd='cs4400',db=dbname)
+    db = pymysql.connect(host='localhost',user='root', passwd='',db=dbname)
     app.run(debug=True)
     db.close()
