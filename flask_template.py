@@ -147,7 +147,7 @@ def userprofile(user = None):
     cursor.execute(
         "select user.last_name, user.first_name, user.email, user_address.street_no, user_address.street,"+
         " user_address.city, user_address.state, user_address.zip, user_address.country,"+
-        " credit_card.credit_card_number from user join user_address using(email) join credit_card using (address_id) where user.email = %s",(session['email']))
+        " credit_card.credit_card_number from user join user_address using(email) join credit_card using (email) where user.email = %s",(session['email']))
     user = cursor.fetchall()
     delete = SubmitField("Delete Credit Card")
     edit = SubmitField("Edit Profile")
@@ -211,7 +211,7 @@ class editccForm(Form):
     country = StringField('Country', validators=[Required("Please enter the country")])
     submit = SubmitField('Submit')
 
-@app.route('/editcc')
+@app.route('/editcc', methods=['GET','POST'])
 def editcc():
     form = editccForm()
     #verification and struggle bus sql things
@@ -223,35 +223,33 @@ def editcc():
             ccn=int(form.credit_card_number.data)
             cvv=int(form.CVV.data)
             exp_yr=int(form.expiration_year.data)
-            exp_mo=int(form.expiration_mo.data)
-            #street_no=form.street_no.data
-            #if street_no:
-            #    pass
-            #else:
-            #    street_no="NULL"
-            #street=str(form.street.data)
-            #if street:
-            #    pass
-            #else:
-            #    street="NULL"
-            #city=str(form.city.data)
-            #state=str(form.state.data)
-            #if state:
-            #    pass
-            #else:
-            #    state="NULL"
-            #zipcode=form.zipcode.data
-            #country=str(form.country.data)
-            #cursor = db.cursor()
-            #sql1=("update user_address(email,street_no, street, city, state,zip,country)"+
-            #"values('%s', %i, '%s', '%s', '%s', %i, '%s')" %(email, street_no, street, city, state, zipcode, country))
-            #sql2=("insert into credit_card values(credit_card_number,cvv,exp_yr,exp_mo,name_on_card,address_id)"+
-            #"values(%i, %i, %i, %i, '%s', %i)" %(ccn,cvv,exp_yr,exp_mo,name,street_no))
-            #cursor.execute(sql1)
-            #cursor.execute(sql2)
-            #cursor.close()
-            #db.commit()
-            #return sql1
+            exp_mo=int(form.expiration_month.data)
+            street_no=form.street_no.data
+            if street_no:
+                pass
+            else:
+                street_no="NULL"
+            street=str(form.street.data)
+            if street:
+                pass
+            else:
+                street="NULL"
+            city=str(form.city.data)
+            state=str(form.state.data)
+            if state:
+                pass
+            else:
+                state="NULL"
+            zipcode=form.zipcode.data
+            country=str(form.country.data)
+            cursor = db.cursor()
+            sql1=("update user_address set street_no= %i, street='%s', city='%s',state='%s',zip='%s',country='%s' where email='%s'" %(street_no,street,city,state,zipcode,country,session['email']))
+            sql2=("update credit_card set credit_card_number= %i,cvv=%i ,exp_yr= %i,exp_mo=%i,name_on_card='%s' where email ='%s'" %(ccn,cvv,exp_yr,exp_mo,name,session['email']))
+            cursor.execute(sql1)
+            cursor.execute(sql2)
+            cursor.close()
+            db.commit()
+            return redirect(url_for('userprofile'))
     elif request.method=="GET":
         return render_template('editcc.html', form=form)
 
