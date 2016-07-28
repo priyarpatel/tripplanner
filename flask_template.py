@@ -50,8 +50,8 @@ def home():
     cursor = db.cursor()
     cursor.execute(
         "select distinct city as City, start_date as Date from trip " +
-        "join activity using (trip_id) " +
-        "where start_date >= CURDATE() and email = %s",
+        # "join activity using (trip_id) " +
+        "where start_date >= CURDATE() and email = %s order by trip_id",
         (session['email']))
     Trip = namedtuple('Trip', ['city', 'date'])
     trips = [Trip._make(row) for row in cursor.fetchall()]
@@ -64,18 +64,19 @@ def home():
     try:
         cursor.execute(
             "select trip_id from trip " +
-            "join activity using (trip_id) " +
-            "where start_date >= CURDATE() and email = %s limit 1",
+            # "join activity using (trip_id) " +
+            "where start_date >= CURDATE() and email = %s order by trip_id",
             (session['email']))
-        trip = cursor.fetchone()[0]
+        trip_ids = cursor.fetchone()[0]
     except:
-        trip = None
+        trip_ids = None
     cursor.close()
     return render_template('home.html', trips=trips,
                            user=session['customer_name'], admuser = admin,
-                           tid = trip)
+                           tid = trip_ids)
 class createtripForm(Form):
-    city = SelectField('City', coerce = int, choices=[], validators=[Required("Select a city.")])
+    city = SelectField('City', choices=[],
+        validators=[Required("Select a city.")])
     start = DateTimeField('Start Date (YYYY-MM-DD HH:MM:SS)',
         format='%Y-%m-%d %H:%M:%S', validators=[Required("Please enter a date " +
         "and time in the format specified.")])
@@ -89,7 +90,7 @@ class createtripForm(Form):
 def createtrip():
     cursor = db.cursor()
     cursor.execute("select distinct city from attraction")
-    form = createtripForm(request.form)
+    form = createtripForm()
     form.city.choices = [(i, tup[0]) for i,tup in enumerate(cursor.fetchall())]
     #SQL and verification whyyyyyyyy
     cursor.close()
@@ -276,7 +277,7 @@ def addattraction():
             else:
                 resreq=0
             cursor = db.cursor()
-            sql1=("insert into attraction (name, street_no, street, city, state, zip, country, description, nearest_pub_transit, price, reservation_required)" + 
+            sql1=("insert into attraction (name, street_no, street, city, state, zip, country, description, nearest_pub_transit, price, reservation_required)" +
                 "values('%s',%i,'%s','%s','%s',%i,'%s','%s','%s',%i,%i)" % (name, street_no, street, city, state, zipcode, country, description, nearestpubtransit, price, resreq))
             cursor.execute(sql1)
             cursor.close()
