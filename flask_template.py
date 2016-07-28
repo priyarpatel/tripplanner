@@ -413,15 +413,11 @@ class editattractionForm(Form):
     submit = SubmitField('Add Attraction')
 
 class registrationForm(Form):
-    name = StringField('Name', validators=[Required()])
-    street_no = StringField('Street Number', validators=[Required()])
-    street = StringField('Street', validators=[Required()])
-    city = StringField('City', validators=[Required()])
-    state = StringField('State', validators=[Required()])
-    zipcode = StringField('Zip Code', validators=[Required()])
-    country = StringField('Country', validators=[Required()])
+    email=StringField('Email', validators=[Required()])
+    first_name = StringField('First Name', validators=[Required()])
+    last_name = StringField('Last Name', validators=[Required()])
+    password = StringField('Password', validators=[Required()])
     submit = SubmitField('Create Account')
-
 
 @app.route('/addattraction', methods=['GET','POST'])
 def addattraction():
@@ -579,7 +575,22 @@ def registration():
     form = registrationForm()
     #SQL insert statements
     if request.method=="POST":
-        return "Form posted"
+        if form.validate()==False:
+            return render_template('registration.html', form=form)
+        else:
+            email=str(form.email.data)
+            first_name=str(form.first_name.data)
+            last_name=str(form.last_name.data)
+            password=str(form.password.data)
+            on_hold=0
+            is_admin=0
+            cursor = db.cursor()
+            sql1=("insert into user (email, first_name, last_name, password, on_hold, is_admin)" +
+                "values('%s','%s','%s','%s',%i,%i)" % (email, first_name, last_name, password, on_hold, is_admin))
+            cursor.execute(sql1)
+            cursor.close()
+            db.commit()
+            return redirect(url_for('userprofile'))
     elif request.method=="GET":
         return render_template('registration.html', form=form)
 
