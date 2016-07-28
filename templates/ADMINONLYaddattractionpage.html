@@ -3,6 +3,10 @@
 
 {% block content %}
 <h1>Add Attraction</h1>
+{% for message in get_flashed_messages() %}
+	<div class='flash'>{{message}}</div>
+{% endfor %}
+
 {% import "bootstrap/wtf.html" as wtf %}
 {{ wtf.quick_form(form) }}
 {% endblock %}
