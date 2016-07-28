@@ -2,7 +2,7 @@ from collections import namedtuple
 from flask import Flask, render_template, session, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap
 from flask_wtf import Form
-from wtforms import (StringField, SubmitField, BooleanField,
+from wtforms import (StringField, SubmitField, IntegerField, BooleanField,
 SelectField, validators)
 from wtforms.validators import Required
 import pymysql
@@ -180,29 +180,29 @@ def editcc():
 
 class addattractionForm(Form):
     name = StringField('Name', validators=[Required()])
-    street_no = StringField('Street Number', validators=[Required()])
-    street = StringField('Street', validators=[Required()])
+    street_no = IntegerField('Street Number')
+    street = StringField('Street')
     city = StringField('City', validators=[Required()])
-    state = StringField('State', validators=[Required()])
-    zipcode = StringField('Zip Code', validators=[Required()])
+    state = StringField('State')
+    zipcode = IntegerField('Zip Code', validators=[Required()])
     country = StringField('Country', validators=[Required()])
     description = StringField('Description', validators=[Required()])
     nearestpubtransit = StringField('Nearest Public Transit', validators=[Required()])
     resreq = BooleanField('Reservation Required', validators=[Required()])
-    MonOpen = StringField('Opening hour on Monday', validators=[Required()])
-    MonClosed = StringField('Closing hour on Monday', validators=[Required()])
-    TuesOpen = StringField('Opening hour on Tuesday', validators=[Required()])
-    TuesClosed = StringField('Closing hour on Tuesday', validators=[Required()])
-    WedOpen = StringField('Opening hour on Wednesday', validators=[Required()])
-    WedClosed = StringField('Closing hour on Wednesday', validators=[Required()])
-    ThursOpen = StringField('Opening hour on Thursday', validators=[Required()])
-    ThursClosed = StringField('Closing hour on Thursday', validators=[Required()])
-    FriOpen = StringField('Opening hour on Friday', validators=[Required()])
-    FriClosed = StringField('Closing hour on Friday', validators=[Required()])
-    SatOpen = StringField('Opening hour on Saturday', validators=[Required()])
-    SatClosed = StringField('Closing hour on Saturday', validators=[Required()])
-    SunOpen = StringField('Opening hour on Sunday', validators=[Required()])
-    SunClosed = StringField('Closing hour on Sunday', validators=[Required()])
+    # MonOpen = TimeField('Opening hour on Monday', validators=[Required()])
+    # MonClosed = StringField('Closing hour on Monday', validators=[Required()])
+    # TuesOpen = StringField('Opening hour on Tuesday', validators=[Required()])
+    # TuesClosed = StringField('Closing hour on Tuesday', validators=[Required()])
+    # WedOpen = StringField('Opening hour on Wednesday', validators=[Required()])
+    # WedClosed = StringField('Closing hour on Wednesday', validators=[Required()])
+    # ThursOpen = StringField('Opening hour on Thursday', validators=[Required()])
+    # ThursClosed = StringField('Closing hour on Thursday', validators=[Required()])
+    # FriOpen = StringField('Opening hour on Friday', validators=[Required()])
+    # FriClosed = StringField('Closing hour on Friday', validators=[Required()])
+    # SatOpen = StringField('Opening hour on Saturday', validators=[Required()])
+    # SatClosed = StringField('Closing hour on Saturday', validators=[Required()])
+    # SunOpen = StringField('Opening hour on Sunday', validators=[Required()])
+    # SunClosed = StringField('Closing hour on Sunday', validators=[Required()])
     submit = SubmitField('Add Attraction')
 
 class registrationForm(Form):
@@ -220,6 +220,7 @@ class registrationForm(Form):
 def addattraction():
     form = addattractionForm()
     #verification and struggle bus sql things
+    #http://code.tutsplus.com/tutorials/intro-to-flask-adding-a-contact-page--net-28982
     if request.method=="POST":
         return "Form posted"
     elif request.method=="GET":
@@ -227,7 +228,7 @@ def addattraction():
 
 @app.route('/registration', methods=['GET','POST'])
 def registration():
-    form = addattractionForm()
+    form = registrationForm()
     #SQL insert statements
     if request.method=="POST":
         return "Form posted"
