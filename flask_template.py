@@ -3,7 +3,7 @@ from flask import Flask, render_template, session, redirect, url_for, flash, req
 from flask_bootstrap import Bootstrap
 from flask_wtf import Form
 from wtforms import (StringField, SubmitField, IntegerField, BooleanField,
-SelectField, validators)
+SelectField, validators, ValidationError)
 from wtforms.validators import Required
 import pymysql
 
