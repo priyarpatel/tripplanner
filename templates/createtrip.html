@@ -6,6 +6,9 @@
 <html>
     <head> <title> Create Trip </title></head>
     <h1/>Enter details for new trip:</h1>
+    {% for message in get_flashed_messages() %}
+        <div class="flash">{{ message }}</div>
+    {% endfor %}
     {% import "bootstrap/wtf.html" as wtf %}
     {{ wtf.quick_form(form) }}
 </html>
