@@ -2,11 +2,15 @@
 {% block title %}Add Attraction{% endblock %}
 
 {% block content %}
-<h1>Add Attraction</h1>
-{% for message in get_flashed_messages() %}
-	<div class='flash'>{{message}}</div>
-{% endfor %}
 
-{% import "bootstrap/wtf.html" as wtf %}
-{{ wtf.quick_form(form) }}
+<html>
+    <head> <title> Add Attraction </title></head>
+    <h1/>Enter details for new attraction:</h1>
+    {% for message in get_flashed_messages() %}
+        <div class="flash">{{ message }}</div>
+    {% endfor %}
+    {% import "bootstrap/wtf.html" as wtf %}
+    {{ wtf.quick_form(form) }}
+</html>
+
 {% endblock %}
