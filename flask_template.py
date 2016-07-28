@@ -3,7 +3,7 @@ from flask import Flask, render_template, session, redirect, url_for, flash, req
 from flask_bootstrap import Bootstrap
 from flask_wtf import Form
 from wtforms import (StringField, SubmitField, IntegerField, BooleanField,
-SelectField, DateTimeField, validators, ValidationError)
+SelectField, DateTimeField, validators, ValidationError, RadioField)
 from wtforms.validators import Required
 import pymysql
 import getpass
@@ -169,10 +169,11 @@ def attrsearch():
 
 class editccForm(Form):
     name_on_card = StringField('Name', validators=[Required()])
-    credit_card_number = StringField('Credit Card Number', validators=[Required()])
-    CVV = StringField('CVV', validators=[Required()])
-    expiration_year = StringField('Expiration Year', validators=[Required()])
-    expiration_month = StringField('Expiration Month', validators=[Required()])
+    credit_card_number = StringField('Credit Card Number', validators=[Required('Please enter your credit card number.')])
+    CVV = StringField('CVV', validators=[Required('Please enter your CVV.')])
+    expiration_year = StringField('Expiration Year (YYYY)', validators=[Required('Please enter your credit card expiration year.')])
+    expiration_month = StringField('Expiration Month (MM)', validators=[Required('Please enter your credit card expiration month.')])
+    address = RadioField('Billing Address', choices=[('1','Use shipping address'),('2', 'Enter a new billing address')], validators=[Required('Please select an option for billing address.')])
     submit = SubmitField('Submit')
 
 @app.route('/editcc')
