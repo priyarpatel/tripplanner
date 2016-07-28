@@ -4,10 +4,10 @@
 {% block content %}
 
 <html>
-    <head> <title> Create a new trip: </title></head>
-    <body>
-        <p> Add code for new trip form </p>
-    </body>
+    <head> <title> Create Trip </title></head>
+    <h1/>Enter details for new trip:</h1>
+    {% import "bootstrap/wtf.html" as wtf %}
+    {{ wtf.quick_form(form) }}
 </html>
 
 {% endblock %}
