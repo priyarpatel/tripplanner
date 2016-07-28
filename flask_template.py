@@ -355,6 +355,7 @@ def editprof():
         if form.validate()==False:
             return render_template('editprof.html',form=form)
         else:
+            password=str(form.password.data)
             street_no=int(form.street_no.data)
             if street_no:
                 pass
@@ -375,7 +376,9 @@ def editprof():
             country=str(form.country.data)
             cursor=db.cursor()
             sql1=("update user_address set street_no= %i, street='%s', city='%s',state='%s',zip='%s',country='%s' where email='%s'" %(street_no,street,city,state,zipcode,country,session['email']))
+            sql2=("update user set password='%s' where email = '%s'" %(password, session['email']))
             cursor.execute(sql1)
+            cursor.execute(sql2)
             cursor.close()
             db.commit()
             return "successful"
@@ -383,7 +386,7 @@ def editprof():
         return render_template('editprof.html', form=form, columns=column_names, name=user)
 
 class editprofForm(Form):
-    #password = StringField('Change Password', validators=[Required()])
+    password = StringField('Change Password', validators=[Required()])
     street_no = StringField('Street Number')
     street = StringField('Street', validators=[Required()])
     city = StringField('City', validators=[Required()])
