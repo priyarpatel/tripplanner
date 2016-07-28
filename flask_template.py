@@ -3,7 +3,7 @@ from flask import Flask, render_template, session, redirect, url_for, flash, req
 from flask_bootstrap import Bootstrap
 from flask_wtf import Form
 from wtforms import (StringField, SubmitField, IntegerField, BooleanField,
-SelectField, DateTimeField, validators)
+SelectField, DateTimeField, validators, ValidationError)
 from wtforms.validators import Required
 import pymysql
 import getpass
@@ -195,20 +195,20 @@ class addattractionForm(Form):
     description = StringField('Description', validators=[Required()])
     nearestpubtransit = StringField('Nearest Public Transit', validators=[Required()])
     resreq = BooleanField('Reservation Required', validators=[Required()])
-    # MonOpen = TimeField('Opening hour on Monday', validators=[Required()])
-    # MonClosed = StringField('Closing hour on Monday', validators=[Required()])
-    # TuesOpen = StringField('Opening hour on Tuesday', validators=[Required()])
-    # TuesClosed = StringField('Closing hour on Tuesday', validators=[Required()])
-    # WedOpen = StringField('Opening hour on Wednesday', validators=[Required()])
-    # WedClosed = StringField('Closing hour on Wednesday', validators=[Required()])
-    # ThursOpen = StringField('Opening hour on Thursday', validators=[Required()])
-    # ThursClosed = StringField('Closing hour on Thursday', validators=[Required()])
-    # FriOpen = StringField('Opening hour on Friday', validators=[Required()])
-    # FriClosed = StringField('Closing hour on Friday', validators=[Required()])
-    # SatOpen = StringField('Opening hour on Saturday', validators=[Required()])
-    # SatClosed = StringField('Closing hour on Saturday', validators=[Required()])
-    # SunOpen = StringField('Opening hour on Sunday', validators=[Required()])
-    # SunClosed = StringField('Closing hour on Sunday', validators=[Required()])
+    MonOpen = SelectField('Opening time on Monday', choices=[(1,'Not open on Monday'),(2,'08:00:00'),(3,'08:30:00'),(4,'09:00:00'),(5,'09:30:00'),(6,'10:00:00'),(7,'10:30:00'),(8,'11:00:00'),(9,'11:30:00'),(10,'12:00:00'),(11,'12:30:00'),(12,'13:00:00'),(13,'13:30:00'),(14,'14:00:00'),(15,'14:30:00'),(16,'15:00:00'),(17,'15:30:00'),(18,'16:00:00')])
+    MonClosed = SelectField('Closing time on Monday', choices=[(1,'Not open on Monday'),(2,'15:00:00'),(3,'15:30:00'),(4,'16:00:00'),(5,'16:30:00'),(6,'17:00:00'),(7,'17:30:00'),(8,'18:00:00'),(9,'18:30:00'),(10,'19:00:00'),(11,'19:30:00'),(12,'20:00:00'),(13,'20:30:00'),(14,'21:00:00'),(15,'21:30:00'),(16,'22:00:00'),(17,'22:30:00'),(18,'23:00:00'),(19,'23:30:00'),(20,'23:59:59')])
+    TuesOpen = SelectField('Opening time on Tuesday', choices=[(1,'Not open on Tuesday'),(2,'08:00:00'),(3,'08:30:00'),(4,'09:00:00'),(5,'09:30:00'),(6,'10:00:00'),(7,'10:30:00'),(8,'11:00:00'),(9,'11:30:00'),(10,'12:00:00'),(11,'12:30:00'),(12,'13:00:00'),(13,'13:30:00'),(14,'14:00:00'),(15,'14:30:00'),(16,'15:00:00'),(17,'15:30:00'),(18,'16:00:00')])
+    TuesClosed = SelectField('Closing time on Tuesday', choices=[(1,'Not open on Tuesday'),(2,'15:00:00'),(3,'15:30:00'),(4,'16:00:00'),(5,'16:30:00'),(6,'17:00:00'),(7,'17:30:00'),(8,'18:00:00'),(9,'18:30:00'),(10,'19:00:00'),(11,'19:30:00'),(12,'20:00:00'),(13,'20:30:00'),(14,'21:00:00'),(15,'21:30:00'),(16,'22:00:00'),(17,'22:30:00'),(18,'23:00:00'),(19,'23:30:00'),(20,'23:59:59')])
+    WedOpen = SelectField('Opening time on Wednesday', choices=[(1,'Not open on Wednesday'),(2,'08:00:00'),(3,'08:30:00'),(4,'09:00:00'),(5,'09:30:00'),(6,'10:00:00'),(7,'10:30:00'),(8,'11:00:00'),(9,'11:30:00'),(10,'12:00:00'),(11,'12:30:00'),(12,'13:00:00'),(13,'13:30:00'),(14,'14:00:00'),(15,'14:30:00'),(16,'15:00:00'),(17,'15:30:00'),(18,'16:00:00')])
+    WedClosed = SelectField('Closing time on Wednesday', choices=[(1,'Not open on Wednesday'),(2,'15:00:00'),(3,'15:30:00'),(4,'16:00:00'),(5,'16:30:00'),(6,'17:00:00'),(7,'17:30:00'),(8,'18:00:00'),(9,'18:30:00'),(10,'19:00:00'),(11,'19:30:00'),(12,'20:00:00'),(13,'20:30:00'),(14,'21:00:00'),(15,'21:30:00'),(16,'22:00:00'),(17,'22:30:00'),(18,'23:00:00'),(19,'23:30:00'),(20,'23:59:59')])
+    ThursOpen = SelectField('Opening time on Thursday', choices=[(1,'Not open on Thursday'),(2,'08:00:00'),(3,'08:30:00'),(4,'09:00:00'),(5,'09:30:00'),(6,'10:00:00'),(7,'10:30:00'),(8,'11:00:00'),(9,'11:30:00'),(10,'12:00:00'),(11,'12:30:00'),(12,'13:00:00'),(13,'13:30:00'),(14,'14:00:00'),(15,'14:30:00'),(16,'15:00:00'),(17,'15:30:00'),(18,'16:00:00')])
+    ThursClosed = SelectField('Closing time on Thursday', choices=[(1,'Not open on Thursday'),(2,'15:00:00'),(3,'15:30:00'),(4,'16:00:00'),(5,'16:30:00'),(6,'17:00:00'),(7,'17:30:00'),(8,'18:00:00'),(9,'18:30:00'),(10,'19:00:00'),(11,'19:30:00'),(12,'20:00:00'),(13,'20:30:00'),(14,'21:00:00'),(15,'21:30:00'),(16,'22:00:00'),(17,'22:30:00'),(18,'23:00:00'),(19,'23:30:00'),(20,'23:59:59')])
+    FriOpen = SelectField('Opening time on Friday', choices=[(1,'Not open on Friday'),(2,'08:00:00'),(3,'08:30:00'),(4,'09:00:00'),(5,'09:30:00'),(6,'10:00:00'),(7,'10:30:00'),(8,'11:00:00'),(9,'11:30:00'),(10,'12:00:00'),(11,'12:30:00'),(12,'13:00:00'),(13,'13:30:00'),(14,'14:00:00'),(15,'14:30:00'),(16,'15:00:00'),(17,'15:30:00'),(18,'16:00:00')])
+    FriClosed = SelectField('Closing time on Friday', choices=[(1,'Not open on Friday'),(2,'15:00:00'),(3,'15:30:00'),(4,'16:00:00'),(5,'16:30:00'),(6,'17:00:00'),(7,'17:30:00'),(8,'18:00:00'),(9,'18:30:00'),(10,'19:00:00'),(11,'19:30:00'),(12,'20:00:00'),(13,'20:30:00'),(14,'21:00:00'),(15,'21:30:00'),(16,'22:00:00'),(17,'22:30:00'),(18,'23:00:00'),(19,'23:30:00'),(20,'23:59:59')])
+    SatOpen = SelectField('Opening time on Saturday', choices=[(1,'Not open on Saturday'),(2,'08:00:00'),(3,'08:30:00'),(4,'09:00:00'),(5,'09:30:00'),(6,'10:00:00'),(7,'10:30:00'),(8,'11:00:00'),(9,'11:30:00'),(10,'12:00:00'),(11,'12:30:00'),(12,'13:00:00'),(13,'13:30:00'),(14,'14:00:00'),(15,'14:30:00'),(16,'15:00:00'),(17,'15:30:00'),(18,'16:00:00')])
+    SatClosed = SelectField('Closing time on Saturday', choices=[(1,'Not open on Saturday'),(2,'15:00:00'),(3,'15:30:00'),(4,'16:00:00'),(5,'16:30:00'),(6,'17:00:00'),(7,'17:30:00'),(8,'18:00:00'),(9,'18:30:00'),(10,'19:00:00'),(11,'19:30:00'),(12,'20:00:00'),(13,'20:30:00'),(14,'21:00:00'),(15,'21:30:00'),(16,'22:00:00'),(17,'22:30:00'),(18,'23:00:00'),(19,'23:30:00'),(20,'23:59:59')])
+    SunOpen = SelectField('Opening time on Sunday', choices=[(1,'Not open on Sunday'),(2,'08:00:00'),(3,'08:30:00'),(4,'09:00:00'),(5,'09:30:00'),(6,'10:00:00'),(7,'10:30:00'),(8,'11:00:00'),(9,'11:30:00'),(10,'12:00:00'),(11,'12:30:00'),(12,'13:00:00'),(13,'13:30:00'),(14,'14:00:00'),(15,'14:30:00'),(16,'15:00:00'),(17,'15:30:00'),(18,'16:00:00')])
+    SunClosed = SelectField('Closing time on Sunday', choices=[(1,'Not open on Sunday'),(2,'15:00:00'),(3,'15:30:00'),(4,'16:00:00'),(5,'16:30:00'),(6,'17:00:00'),(7,'17:30:00'),(8,'18:00:00'),(9,'18:30:00'),(10,'19:00:00'),(11,'19:30:00'),(12,'20:00:00'),(13,'20:30:00'),(14,'21:00:00'),(15,'21:30:00'),(16,'22:00:00'),(17,'22:30:00'),(18,'23:00:00'),(19,'23:30:00'),(20,'23:59:59')])
     submit = SubmitField('Add Attraction')
 
 class registrationForm(Form):
