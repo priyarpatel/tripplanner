@@ -179,6 +179,13 @@ def attractioncontrols():
 
 @app.route('/attractioneditpage/<row>')
 def attractioneditpage(row):
+    # aid=int(row[1])
+    # cursor = db.cursor()
+    # sql2= ("select * from attraction where attraction_id=%i" % (aid))
+    # cursor.execute(sql2)
+    # attractioninfo=cursor.fetchall()
+    # column_names=[desc[0] for desc in cursor.description]
+    # cursor.close()
     return render_template('attractionschedulespage.html')
 
 @app.route('/attractionsearch')
