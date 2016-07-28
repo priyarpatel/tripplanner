@@ -3,9 +3,10 @@ from flask import Flask, render_template, session, redirect, url_for, flash, req
 from flask_bootstrap import Bootstrap
 from flask_wtf import Form
 from wtforms import (StringField, SubmitField, IntegerField, BooleanField,
-SelectField, validators)
+SelectField, DateTimeField, validators)
 from wtforms.validators import Required
 import pymysql
+import getpass
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Taste the Rainbow'
@@ -67,8 +68,10 @@ def home():
                            tid = trip)
 class createtripForm(Form):
     city = SelectField('City', choices=[], validators=[Required()])
-    start = StringField('Start Date', validators=[Required()])
-    end = StringField('End Date', validators=[Required()])
+    start = DateTimeField('Start Date (YYYY-MM-DD HH-MM-SS)',
+        format='%Y-%m-%d %H:%M:%S', validators=[Required()])
+    end = DateTimeField('End Date (YYYY-MM-DD HH-MM-SS)',
+        format='%Y-%m-%d %H:%M:%S', validators=[Required()])
     submit = SubmitField('Create Trip')
 
 
@@ -81,7 +84,10 @@ def createtrip():
     #SQL and verification whyyyyyyyy
     cursor.close()
     if request.method=="POST":
-        return "Form posted"
+        if form.validate() == False:
+            flash('All fields are required.')
+        else:
+            return 'Form posted.'
     elif request.method=="GET":
         return render_template('createtrip.html', form=form)
 
