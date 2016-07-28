@@ -2,7 +2,8 @@ from collections import namedtuple
 from flask import Flask, render_template, session, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap
 from flask_wtf import Form
-from wtforms import StringField, SubmitField, BooleanField, validators
+from wtforms import (StringField, SubmitField, BooleanField,
+SelectField, validators)
 from wtforms.validators import Required
 import pymysql
 
@@ -64,10 +65,25 @@ def home():
     return render_template('home.html', trips=trips,
                            user=session['customer_name'], admuser = admin,
                            tid = trip)
+class createtripForm(Form):
+    city = SelectField('City', choices=[], validators=[Required()])
+    start = StringField('Start Date', validators=[Required()])
+    end = StringField('End Date', validators=[Required()])
+    submit = SubmitField('Create Trip')
 
-@app.route('/createtrip')
+
+@app.route('/createtrip', methods=['GET', 'POST'])
 def createtrip():
-    return render_template('createtrip.html')
+    cursor = db.cursor()
+    cursor.execute("select distinct city from attraction")
+    form = createtripForm()
+    form.city.choices = [(i, tup[0]) for i,tup in enumerate(cursor.fetchall())]
+    #SQL and verification whyyyyyyyy
+    cursor.close()
+    if request.method=="POST":
+        return "Form posted"
+    elif request.method=="GET":
+        return render_template('createtrip.html', form=form)
 
 @app.route('/trip/<tripid>')
 # @app.route('/trip')
@@ -239,5 +255,6 @@ def table(table):
 if __name__ == '__main__':
     dbname = 'team3'
     db = pymysql.connect(host='localhost',user='root', passwd='',db=dbname)
+    cursor = db.cursor()
     app.run(debug=True)
     db.close()
