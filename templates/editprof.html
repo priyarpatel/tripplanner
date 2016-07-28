@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<h1>Edit My Profile</h1>
+<table>
+  <tr>
+    <th>First Name</th><th>Last Name</th><th>E-Mail</th>
+  </tr>
+  <tr>
+    {% for user in name %}
+      <tr>
+        {% for cell in user %}
+          <td>{{cell}}</td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+  </tr>
+</table>
+
+{% import "bootstrap/wtf.html" as wtf %}
+{{ wtf.quick_form(form) }}
+
+{% endblock %}
