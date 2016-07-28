@@ -70,8 +70,8 @@ def createtrip():
     return render_template('createtrip.html')
 
 @app.route('/trip/<tripid>')
-@app.route('/trip')
-def trip(tripid = None):
+# @app.route('/trip')
+def trip(tripid):
     cursor = db.cursor()
     cursor.execute(
         "select attraction.name as Attraction, activity_date as Date, " +
@@ -83,8 +83,23 @@ def trip(tripid = None):
     cursor.execute("select attraction.city from trip join activity using (trip_id) " +
         "join attraction using (attraction_id) where trip_id = %s limit 1", ('1'))
     trip_city = cursor.fetchone()[0]
+    cursor.execute("select purchase_completed from trip where trip_id = %s",
+        (tripid))
+    if cursor.fetchone()[0] == 1:
+        trip_paid = True
+    else:
+        trip_paid = False
     cursor.close()
-    return render_template('trip.html', trips = trips, city = trip_city)
+    return render_template('trip.html', trips = trips, city = trip_city,
+    paid = trip_paid)
+
+@app.route('/edittrip')
+def edittrip():
+    return render_template('editttrip.html')
+
+@app.route('/pay')
+def pay():
+    return render_template('pay.html')
 
 @app.route('/userprofile/<user>')
 @app.route('/userprofile')
