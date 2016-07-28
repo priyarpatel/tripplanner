@@ -186,12 +186,18 @@ def attrsearch():
     return render_template('attractionsearch.html')
 
 class editccForm(Form):
+    email = StringField("Email", validators=[Required()])
     name_on_card = StringField('Name', validators=[Required()])
     credit_card_number = StringField('Credit Card Number', validators=[Required('Please enter your credit card number.')])
     CVV = StringField('CVV', validators=[Required('Please enter your CVV.')])
     expiration_year = StringField('Expiration Year (YYYY)', validators=[Required('Please enter your credit card expiration year.')])
     expiration_month = StringField('Expiration Month (MM)', validators=[Required('Please enter your credit card expiration month.')])
-    address = RadioField('Billing Address', choices=[('1','Use shipping address'),('2', 'Enter a new billing address')], validators=[Required('Please select an option for billing address.')])
+    street_no = IntegerField('Street Number')
+    street = StringField('Street')
+    city = StringField('City', validators=[Required("Please enter the city")])
+    state = StringField('State')
+    zipcode = IntegerField('Zip Code', validators=[Required("Please enter the zip code")])
+    country = StringField('Country', validators=[Required("Please enter the country")])
     submit = SubmitField('Submit')
 
 @app.route('/editcc')
@@ -199,7 +205,43 @@ def editcc():
     form = editccForm()
     #verification and struggle bus sql things
     if request.method=="POST":
-        return "Form posted"
+        if form.validate()==False:
+            return render_template('editcc.html', form=form)
+        else:
+            email=str(form.email.data)
+            name=str(form.name_on_card.data)
+            ccn=form.credit_card_number.data
+            cvv=form.CVV.data
+            exp_yr=form.expiration_year.data
+            exp_mo=form.expiration_mo.data
+            street_no=form.street_no.data
+            if street_no:
+                pass
+            else:
+                street_no="NULL"
+            street=str(form.street.data)
+            if street:
+                pass
+            else:
+                street="NULL"
+            city=str(form.city.data)
+            state=str(form.state.data)
+            if state:
+                pass
+            else:
+                state="NULL"
+            zipcode=form.zipcode.data
+            country=str(form.country.data)
+            #cursor = db.cursor()
+            #sql1=("insert into user_address(email,street_no, street, city, state,zip,country)"+
+            #"values('%s', %i, '%s', '%s', '%s', %i, '%s')" %(email, street_no, street, city, state, zipcode, country))
+            #sql2=("insert into credit_card values(credit_card_number,cvv,exp_yr,exp_mo,name_on_card,address_id)"+
+            #"values(%i, %i, %i, %i, '%s', %i)" %(ccn,cvv,exp_yr,exp_mo,name,street_no))
+            #cursor.execute(sql1)
+            #cursor.execute(sql2)
+            #cursor.close()
+            #db.commit()
+            #return sql1
     elif request.method=="GET":
         return render_template('editcc.html', form=form)
 
@@ -279,7 +321,7 @@ def addattraction():
             else:
                 resreq=0
             cursor = db.cursor()
-            sql1=("insert into attraction (name, street_no, street, city, state, zip, country, description, nearest_pub_transit, price, reservation_required)" + 
+            sql1=("insert into attraction (name, street_no, street, city, state, zip, country, description, nearest_pub_transit, price, reservation_required)" +
                 "values('%s',%i,'%s','%s','%s',%i,'%s','%s','%s',%i,%i)" % (name, street_no, street, city, state, zipcode, country, description, nearestpubtransit, price, resreq))
             cursor.execute(sql1)
             cursor.close()
@@ -310,13 +352,39 @@ def editprof():
     form = editprofForm()
     #verification and struggle bus sql things
     if request.method=="POST":
-        return "Form posted"
+        if form.validate()==False:
+            return render_template('editprof.html',form=form)
+        else:
+            street_no=int(form.street_no.data)
+            if street_no:
+                pass
+            else:
+                street_no="NULL"
+            street=str(form.street.data)
+            if street:
+                pass
+            else:
+                street="NULL"
+            city=str(form.city.data)
+            state=str(form.state.data)
+            if state:
+                pass
+            else:
+                state="NULL"
+            zipcode=str(form.zipcode.data)
+            country=str(form.country.data)
+            cursor=db.cursor()
+            sql1=("update user_address set street_no= %i, street='%s', city='%s',state='%s',zip='%s',country='%s' where email='%s'" %(street_no,street,city,state,zipcode,country,session['email']))
+            cursor.execute(sql1)
+            cursor.close()
+            db.commit()
+            return "successful"
     elif request.method=="GET":
         return render_template('editprof.html', form=form, columns=column_names, name=user)
 
 class editprofForm(Form):
-    password = StringField('Change Password', validators=[Required()])
-    street_no = StringField('Street Number', validators=[Required()])
+    #password = StringField('Change Password', validators=[Required()])
+    street_no = StringField('Street Number')
     street = StringField('Street', validators=[Required()])
     city = StringField('City', validators=[Required()])
     state = StringField('State', validators=[Required()])
