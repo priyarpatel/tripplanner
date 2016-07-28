@@ -177,6 +177,9 @@ def attractioncontrols():
     return render_template('ADMINONLYattractioncontrolpage.html',
                            columns=column_names, rows=attractions)
 
+@app.route('/attractioneditpage/<row>')
+def attractioneditpage(row):
+    return render_template('attractionschedulespage.html')
 
 @app.route('/attractionsearch')
 def attrsearch():
@@ -281,7 +284,7 @@ def addattraction():
             cursor.execute(sql1)
             cursor.close()
             db.commit()
-            return sql1
+            return redirect(url_for('attractioncontrols'))
     elif request.method=="GET":
         return render_template('ADMINONLYaddattractionpage.html', form=form)
 

@@ -3,23 +3,22 @@
 
 {% block content %}
 <a href="/home">Back to home page</a>
-
 <h1>{{table}} Attractions</h1>
+
 <a href="/addattraction">Add attraction</a>
 <table>
 	<tr>
 		{% for column in columns %}
 			<th>{{column}}</th>
 		{% endfor %}
-		<th>edit</th><th>delete</th>
+		<th>view schedule</th><th>edit</th><th>delete</th>
 	</tr>
 	{% for row in rows %}
 		<tr>
 			{% for cell in row %}
-				<td>{{cell}}</td>
+				<td><a href="attractioneditpage/{{row}}">{{cell}}</a></td>
 			{% endfor %}
-			<td><a href="home">Edit</a></td>
-			<td><a href="attractioncontrols">Delete</a></td>
+			<td><a href="attractioneditpage/{{row}}">View Attraction</a></td>
 		</tr>
 	{% endfor %}
 </table>
