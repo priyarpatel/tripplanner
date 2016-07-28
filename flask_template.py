@@ -2,9 +2,11 @@ from collections import namedtuple
 from flask import Flask, render_template, session, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap
 from flask_wtf import Form
-from wtforms import StringField, SubmitField, BooleanField, validators
+from wtforms import (StringField, SubmitField, IntegerField, BooleanField,
+SelectField, DateTimeField, validators, ValidationError)
 from wtforms.validators import Required
 import pymysql
+import getpass
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Taste the Rainbow'
@@ -64,14 +66,34 @@ def home():
     return render_template('home.html', trips=trips,
                            user=session['customer_name'], admuser = admin,
                            tid = trip)
+class createtripForm(Form):
+    city = SelectField('City', choices=[], validators=[Required()])
+    start = DateTimeField('Start Date (YYYY-MM-DD HH-MM-SS)',
+        format='%Y-%m-%d %H:%M:%S', validators=[Required()])
+    end = DateTimeField('End Date (YYYY-MM-DD HH-MM-SS)',
+        format='%Y-%m-%d %H:%M:%S', validators=[Required()])
+    submit = SubmitField('Create Trip')
 
-@app.route('/createtrip')
+
+@app.route('/createtrip', methods=['GET', 'POST'])
 def createtrip():
-    return render_template('createtrip.html')
+    cursor = db.cursor()
+    cursor.execute("select distinct city from attraction")
+    form = createtripForm()
+    form.city.choices = [(i, tup[0]) for i,tup in enumerate(cursor.fetchall())]
+    #SQL and verification whyyyyyyyy
+    cursor.close()
+    if request.method=="POST":
+        if form.validate() == False:
+            flash('All fields are required.')
+        else:
+            return 'Form posted.'
+    elif request.method=="GET":
+        return render_template('createtrip.html', form=form)
 
 @app.route('/trip/<tripid>')
-@app.route('/trip')
-def trip(tripid = None):
+# @app.route('/trip')
+def trip(tripid):
     cursor = db.cursor()
     cursor.execute(
         "select attraction.name as Attraction, activity_date as Date, " +
@@ -83,8 +105,23 @@ def trip(tripid = None):
     cursor.execute("select attraction.city from trip join activity using (trip_id) " +
         "join attraction using (attraction_id) where trip_id = %s limit 1", ('1'))
     trip_city = cursor.fetchone()[0]
+    cursor.execute("select purchase_completed from trip where trip_id = %s",
+        (tripid))
+    if cursor.fetchone()[0] == 1:
+        trip_paid = True
+    else:
+        trip_paid = False
     cursor.close()
-    return render_template('trip.html', trips = trips, city = trip_city)
+    return render_template('trip.html', trips = trips, city = trip_city,
+    paid = trip_paid)
+
+@app.route('/edittrip')
+def edittrip():
+    return render_template('editttrip.html')
+
+@app.route('/pay')
+def pay():
+    return render_template('pay.html')
 
 @app.route('/userprofile/<user>')
 @app.route('/userprofile')
@@ -92,7 +129,7 @@ def userprofile(user = None):
     user = session['email'].split('@')[0]
     cursor = db.cursor()
     cursor.execute(
-        "select user.last_name, user.first_name, user.email, user_address.street_no, user_address.street, user_address.city, user_address.state, user_address.zip, user_address.country, credit_card.credit_card_number from user join user_address using(email) join credit_card using (address_id) where email = %s", (session['email']))
+        "select user.last_name, user.first_name, user.email, user_address.street_no, user_address.street, user_address.city, user_address.state, user_address.zip, user_address.country, credit_card.credit_card_number from user join user_address using(email) join credit_card using (address_id)")
     user = cursor.fetchall()
     delete = SubmitField("Delete Credit Card")
     edit = SubmitField("Edit Profile")
@@ -130,15 +167,6 @@ def attractioncontrols():
 def attrsearch():
     return render_template('attractionsearch.html')
 
-@app.route('/editcc', methods=['GET','POST'])
-def editcc():
-    form = editccForm()
-    #verification and struggle bus sql things
-    if request.method=="POST":
-        return "Form posted"
-    elif request.method=="GET":
-        return render_template('editcc.html', form=form)
-
 class editccForm(Form):
     name_on_card = StringField('Name', validators=[Required()])
     credit_card_number = StringField('Credit Card Number', validators=[Required()])
@@ -147,68 +175,41 @@ class editccForm(Form):
     expiration_month = StringField('Expiration Month', validators=[Required()])
     submit = SubmitField('Submit')
 
-@app.route('/editprof/<user>')
-@app.route('/editprof', methods=['GET','POST'])
-def editprof():
-    user = session['email'].split('@')[0]
-    cursor = db.cursor()
-    cursor.execute("select first_name, last_name, email from user where email = %s",
-        (session['email']))
-    user = cursor.fetchall()
-    column_names = [desc[0] for desc in cursor.description]
-    cursor.close()
-    form = editprofForm()
+@app.route('/editcc')
+def editcc():
+    form = editccForm()
     #verification and struggle bus sql things
     if request.method=="POST":
         return "Form posted"
     elif request.method=="GET":
-        return render_template('editprof.html', form=form, columns=column_names, name=user)
-
-class editprofForm(Form):
-    password = StringField('Change Password', validators=[Required()])
-    street_no = StringField('Street Number', validators=[Required()])
-    street = StringField('Street', validators=[Required()])
-    city = StringField('City', validators=[Required()])
-    state = StringField('State', validators=[Required()])
-    zipcode = StringField('Zip Code', validators=[Required()])
-    country = StringField('Country', validators=[Required()])
-    submit = SubmitField('Submit')
+        return render_template('editcc.html', form=form)
 
 class addattractionForm(Form):
     name = StringField('Name', validators=[Required()])
-    street_no = StringField('Street Number', validators=[Required()])
-    street = StringField('Street', validators=[Required()])
+    street_no = IntegerField('Street Number')
+    street = StringField('Street')
     city = StringField('City', validators=[Required()])
-    state = StringField('State', validators=[Required()])
-    zipcode = StringField('Zip Code', validators=[Required()])
+    state = StringField('State')
+    zipcode = IntegerField('Zip Code', validators=[Required()])
     country = StringField('Country', validators=[Required()])
     description = StringField('Description', validators=[Required()])
     nearestpubtransit = StringField('Nearest Public Transit', validators=[Required()])
     resreq = BooleanField('Reservation Required', validators=[Required()])
-    MonOpen = StringField('Opening hour on Monday', validators=[Required()])
-    MonClosed = StringField('Closing hour on Monday', validators=[Required()])
-    TuesOpen = StringField('Opening hour on Tuesday', validators=[Required()])
-    TuesClosed = StringField('Closing hour on Tuesday', validators=[Required()])
-    WedOpen = StringField('Opening hour on Wednesday', validators=[Required()])
-    WedClosed = StringField('Closing hour on Wednesday', validators=[Required()])
-    ThursOpen = StringField('Opening hour on Thursday', validators=[Required()])
-    ThursClosed = StringField('Closing hour on Thursday', validators=[Required()])
-    FriOpen = StringField('Opening hour on Friday', validators=[Required()])
-    FriClosed = StringField('Closing hour on Friday', validators=[Required()])
-    SatOpen = StringField('Opening hour on Saturday', validators=[Required()])
-    SatClosed = StringField('Closing hour on Saturday', validators=[Required()])
-    SunOpen = StringField('Opening hour on Sunday', validators=[Required()])
-    SunClosed = StringField('Closing hour on Sunday', validators=[Required()])
+    MonOpen = SelectField('Opening time on Monday', choices=[(1,'Not open on Monday'),(2,'08:00:00'),(3,'08:30:00'),(4,'09:00:00'),(5,'09:30:00'),(6,'10:00:00'),(7,'10:30:00'),(8,'11:00:00'),(9,'11:30:00'),(10,'12:00:00'),(11,'12:30:00'),(12,'13:00:00'),(13,'13:30:00'),(14,'14:00:00'),(15,'14:30:00'),(16,'15:00:00'),(17,'15:30:00'),(18,'16:00:00')])
+    MonClosed = SelectField('Closing time on Monday', choices=[(1,'Not open on Monday'),(2,'15:00:00'),(3,'15:30:00'),(4,'16:00:00'),(5,'16:30:00'),(6,'17:00:00'),(7,'17:30:00'),(8,'18:00:00'),(9,'18:30:00'),(10,'19:00:00'),(11,'19:30:00'),(12,'20:00:00'),(13,'20:30:00'),(14,'21:00:00'),(15,'21:30:00'),(16,'22:00:00'),(17,'22:30:00'),(18,'23:00:00'),(19,'23:30:00'),(20,'23:59:59')])
+    TuesOpen = SelectField('Opening time on Tuesday', choices=[(1,'Not open on Tuesday'),(2,'08:00:00'),(3,'08:30:00'),(4,'09:00:00'),(5,'09:30:00'),(6,'10:00:00'),(7,'10:30:00'),(8,'11:00:00'),(9,'11:30:00'),(10,'12:00:00'),(11,'12:30:00'),(12,'13:00:00'),(13,'13:30:00'),(14,'14:00:00'),(15,'14:30:00'),(16,'15:00:00'),(17,'15:30:00'),(18,'16:00:00')])
+    TuesClosed = SelectField('Closing time on Tuesday', choices=[(1,'Not open on Tuesday'),(2,'15:00:00'),(3,'15:30:00'),(4,'16:00:00'),(5,'16:30:00'),(6,'17:00:00'),(7,'17:30:00'),(8,'18:00:00'),(9,'18:30:00'),(10,'19:00:00'),(11,'19:30:00'),(12,'20:00:00'),(13,'20:30:00'),(14,'21:00:00'),(15,'21:30:00'),(16,'22:00:00'),(17,'22:30:00'),(18,'23:00:00'),(19,'23:30:00'),(20,'23:59:59')])
+    WedOpen = SelectField('Opening time on Wednesday', choices=[(1,'Not open on Wednesday'),(2,'08:00:00'),(3,'08:30:00'),(4,'09:00:00'),(5,'09:30:00'),(6,'10:00:00'),(7,'10:30:00'),(8,'11:00:00'),(9,'11:30:00'),(10,'12:00:00'),(11,'12:30:00'),(12,'13:00:00'),(13,'13:30:00'),(14,'14:00:00'),(15,'14:30:00'),(16,'15:00:00'),(17,'15:30:00'),(18,'16:00:00')])
+    WedClosed = SelectField('Closing time on Wednesday', choices=[(1,'Not open on Wednesday'),(2,'15:00:00'),(3,'15:30:00'),(4,'16:00:00'),(5,'16:30:00'),(6,'17:00:00'),(7,'17:30:00'),(8,'18:00:00'),(9,'18:30:00'),(10,'19:00:00'),(11,'19:30:00'),(12,'20:00:00'),(13,'20:30:00'),(14,'21:00:00'),(15,'21:30:00'),(16,'22:00:00'),(17,'22:30:00'),(18,'23:00:00'),(19,'23:30:00'),(20,'23:59:59')])
+    ThursOpen = SelectField('Opening time on Thursday', choices=[(1,'Not open on Thursday'),(2,'08:00:00'),(3,'08:30:00'),(4,'09:00:00'),(5,'09:30:00'),(6,'10:00:00'),(7,'10:30:00'),(8,'11:00:00'),(9,'11:30:00'),(10,'12:00:00'),(11,'12:30:00'),(12,'13:00:00'),(13,'13:30:00'),(14,'14:00:00'),(15,'14:30:00'),(16,'15:00:00'),(17,'15:30:00'),(18,'16:00:00')])
+    ThursClosed = SelectField('Closing time on Thursday', choices=[(1,'Not open on Thursday'),(2,'15:00:00'),(3,'15:30:00'),(4,'16:00:00'),(5,'16:30:00'),(6,'17:00:00'),(7,'17:30:00'),(8,'18:00:00'),(9,'18:30:00'),(10,'19:00:00'),(11,'19:30:00'),(12,'20:00:00'),(13,'20:30:00'),(14,'21:00:00'),(15,'21:30:00'),(16,'22:00:00'),(17,'22:30:00'),(18,'23:00:00'),(19,'23:30:00'),(20,'23:59:59')])
+    FriOpen = SelectField('Opening time on Friday', choices=[(1,'Not open on Friday'),(2,'08:00:00'),(3,'08:30:00'),(4,'09:00:00'),(5,'09:30:00'),(6,'10:00:00'),(7,'10:30:00'),(8,'11:00:00'),(9,'11:30:00'),(10,'12:00:00'),(11,'12:30:00'),(12,'13:00:00'),(13,'13:30:00'),(14,'14:00:00'),(15,'14:30:00'),(16,'15:00:00'),(17,'15:30:00'),(18,'16:00:00')])
+    FriClosed = SelectField('Closing time on Friday', choices=[(1,'Not open on Friday'),(2,'15:00:00'),(3,'15:30:00'),(4,'16:00:00'),(5,'16:30:00'),(6,'17:00:00'),(7,'17:30:00'),(8,'18:00:00'),(9,'18:30:00'),(10,'19:00:00'),(11,'19:30:00'),(12,'20:00:00'),(13,'20:30:00'),(14,'21:00:00'),(15,'21:30:00'),(16,'22:00:00'),(17,'22:30:00'),(18,'23:00:00'),(19,'23:30:00'),(20,'23:59:59')])
+    SatOpen = SelectField('Opening time on Saturday', choices=[(1,'Not open on Saturday'),(2,'08:00:00'),(3,'08:30:00'),(4,'09:00:00'),(5,'09:30:00'),(6,'10:00:00'),(7,'10:30:00'),(8,'11:00:00'),(9,'11:30:00'),(10,'12:00:00'),(11,'12:30:00'),(12,'13:00:00'),(13,'13:30:00'),(14,'14:00:00'),(15,'14:30:00'),(16,'15:00:00'),(17,'15:30:00'),(18,'16:00:00')])
+    SatClosed = SelectField('Closing time on Saturday', choices=[(1,'Not open on Saturday'),(2,'15:00:00'),(3,'15:30:00'),(4,'16:00:00'),(5,'16:30:00'),(6,'17:00:00'),(7,'17:30:00'),(8,'18:00:00'),(9,'18:30:00'),(10,'19:00:00'),(11,'19:30:00'),(12,'20:00:00'),(13,'20:30:00'),(14,'21:00:00'),(15,'21:30:00'),(16,'22:00:00'),(17,'22:30:00'),(18,'23:00:00'),(19,'23:30:00'),(20,'23:59:59')])
+    SunOpen = SelectField('Opening time on Sunday', choices=[(1,'Not open on Sunday'),(2,'08:00:00'),(3,'08:30:00'),(4,'09:00:00'),(5,'09:30:00'),(6,'10:00:00'),(7,'10:30:00'),(8,'11:00:00'),(9,'11:30:00'),(10,'12:00:00'),(11,'12:30:00'),(12,'13:00:00'),(13,'13:30:00'),(14,'14:00:00'),(15,'14:30:00'),(16,'15:00:00'),(17,'15:30:00'),(18,'16:00:00')])
+    SunClosed = SelectField('Closing time on Sunday', choices=[(1,'Not open on Sunday'),(2,'15:00:00'),(3,'15:30:00'),(4,'16:00:00'),(5,'16:30:00'),(6,'17:00:00'),(7,'17:30:00'),(8,'18:00:00'),(9,'18:30:00'),(10,'19:00:00'),(11,'19:30:00'),(12,'20:00:00'),(13,'20:30:00'),(14,'21:00:00'),(15,'21:30:00'),(16,'22:00:00'),(17,'22:30:00'),(18,'23:00:00'),(19,'23:30:00'),(20,'23:59:59')])
     submit = SubmitField('Add Attraction')
-
-@app.route('/addattraction', methods=['GET','POST'])
-def addattraction():
-    form = addattractionForm()
-    #verification and struggle bus sql things
-    if request.method=="POST":
-        return "Form posted"
-    elif request.method=="GET":
-        return render_template('ADMINONLYaddattractionpage.html', form=form)
 
 class registrationForm(Form):
     name = StringField('Name', validators=[Required()])
@@ -220,9 +221,20 @@ class registrationForm(Form):
     country = StringField('Country', validators=[Required()])
     submit = SubmitField('Create Account')
 
+
+@app.route('/addattraction', methods=['GET','POST'])
+def addattraction():
+    form = addattractionForm()
+    #verification and struggle bus sql things
+    #http://code.tutsplus.com/tutorials/intro-to-flask-adding-a-contact-page--net-28982
+    if request.method=="POST":
+        return "Form posted"
+    elif request.method=="GET":
+        return render_template('ADMINONLYaddattractionpage.html', form=form)
+
 @app.route('/registration', methods=['GET','POST'])
 def registration():
-    form = addattractionForm()
+    form = registrationForm()
     #SQL insert statements
     if request.method=="POST":
         return "Form posted"
@@ -250,5 +262,6 @@ def table(table):
 if __name__ == '__main__':
     dbname = 'team3'
     db = pymysql.connect(host='localhost',user='root', passwd='',db=dbname)
+    cursor = db.cursor()
     app.run(debug=True)
     db.close()
