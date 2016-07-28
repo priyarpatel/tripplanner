@@ -12,6 +12,14 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Taste the Rainbow'
 bootstrap = Bootstrap(app)
 
+def flash_errors(form):
+    for field, errors in form.errors.items():
+        for error in errors:
+            flash(u"Error in the %s field - %s" % (
+                getattr(form, field).label.text,
+                error
+            ))
+
 class LoginForm(Form):
     email = StringField('Email address', validators=[Required()])
     password = StringField('Password', validators=[Required()])
@@ -67,11 +75,13 @@ def home():
                            user=session['customer_name'], admuser = admin,
                            tid = trip)
 class createtripForm(Form):
-    city = SelectField('City', choices=[], validators=[Required()])
+    city = SelectField('City', coerce = int, choices=[], validators=[Required("Select a city.")])
     start = DateTimeField('Start Date (YYYY-MM-DD HH:MM:SS)',
-        format='%Y-%m-%d %H:%M:%S', validators=[Required()])
+        format='%Y-%m-%d %H:%M:%S', validators=[Required("Please enter a date " +
+        "and time in the format specified.")])
     end = DateTimeField('End Date (YYYY-MM-DD HH:MM:SS)',
-        format='%Y-%m-%d %H:%M:%S', validators=[Required()])
+        format='%Y-%m-%d %H:%M:%S', validators=[Required("Please enter a date " +
+        "and time in the format specified.")])
     submit = SubmitField('Create Trip')
 
 
@@ -79,13 +89,17 @@ class createtripForm(Form):
 def createtrip():
     cursor = db.cursor()
     cursor.execute("select distinct city from attraction")
-    form = createtripForm()
+    form = createtripForm(request.form)
     form.city.choices = [(i, tup[0]) for i,tup in enumerate(cursor.fetchall())]
     #SQL and verification whyyyyyyyy
     cursor.close()
     if request.method=="POST":
+        print(form.validate())
         if form.validate() == False:
-            flash('All fields are required.')
+            print(type(form.city))
+            print(type(form.start))
+            print(type(form.end))
+            flash('Please enter all information correctly.')
             return render_template('createtrip.html', form=form)
         else:
             return 'Form posted.'

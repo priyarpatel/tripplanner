@@ -2,16 +2,20 @@
 {% block title %} Create Trip {% endblock %}
 
 {% block content %}
-
-<html>
-    <head> <title> Create Trip </title></head>
-    <h1/>Enter details for new trip:</h1>
-    {% for message in get_flashed_messages() %}
-        <div class="flash">{{ message }}</div>
+<form method="post" action="/">
+    {{ form.csrf_token }}
+</form>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+      <li>{{ message }}</li>
     {% endfor %}
-    
+<h1/>Enter details for new trip:</h1>
+        </ul>
+      {% endif %}
+    {% endwith %}
     {% import "bootstrap/wtf.html" as wtf %}
     {{ wtf.quick_form(form) }}
-</html>
 
 {% endblock %}
