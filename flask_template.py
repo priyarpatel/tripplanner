@@ -145,7 +145,9 @@ def userprofile(user = None):
     user = session['email'].split('@')[0]
     cursor = db.cursor()
     cursor.execute(
-        "select user.last_name, user.first_name, user.email, user_address.street_no, user_address.street, user_address.city, user_address.state, user_address.zip, user_address.country, credit_card.credit_card_number from user join user_address using(email) join credit_card using (address_id)")
+        "select user.last_name, user.first_name, user.email, user_address.street_no, user_address.street,"+
+        " user_address.city, user_address.state, user_address.zip, user_address.country,"+
+        " credit_card.credit_card_number from user join user_address using(email) join credit_card using (address_id) where user.email = %s",(session['email']))
     user = cursor.fetchall()
     delete = SubmitField("Delete Credit Card")
     edit = SubmitField("Edit Profile")
@@ -196,7 +198,6 @@ def attrsearch():
     return render_template('attractionsearch.html')
 
 class editccForm(Form):
-    email = StringField("Email", validators=[Required()])
     name_on_card = StringField('Name', validators=[Required()])
     credit_card_number = StringField('Credit Card Number', validators=[Required('Please enter your credit card number.')])
     CVV = StringField('CVV', validators=[Required('Please enter your CVV.')])
@@ -218,30 +219,29 @@ def editcc():
         if form.validate()==False:
             return render_template('editcc.html', form=form)
         else:
-            email=str(form.email.data)
             name=str(form.name_on_card.data)
-            ccn=form.credit_card_number.data
-            cvv=form.CVV.data
-            exp_yr=form.expiration_year.data
-            exp_mo=form.expiration_mo.data
-            street_no=form.street_no.data
-            if street_no:
-                pass
-            else:
-                street_no="NULL"
-            street=str(form.street.data)
-            if street:
-                pass
-            else:
-                street="NULL"
-            city=str(form.city.data)
-            state=str(form.state.data)
-            if state:
-                pass
-            else:
-                state="NULL"
-            zipcode=form.zipcode.data
-            country=str(form.country.data)
+            ccn=int(form.credit_card_number.data)
+            cvv=int(form.CVV.data)
+            exp_yr=int(form.expiration_year.data)
+            exp_mo=int(form.expiration_mo.data)
+            #street_no=form.street_no.data
+            #if street_no:
+            #    pass
+            #else:
+            #    street_no="NULL"
+            #street=str(form.street.data)
+            #if street:
+            #    pass
+            #else:
+            #    street="NULL"
+            #city=str(form.city.data)
+            #state=str(form.state.data)
+            #if state:
+            #    pass
+            #else:
+            #    state="NULL"
+            #zipcode=form.zipcode.data
+            #country=str(form.country.data)
             #cursor = db.cursor()
             #sql1=("update user_address(email,street_no, street, city, state,zip,country)"+
             #"values('%s', %i, '%s', '%s', '%s', %i, '%s')" %(email, street_no, street, city, state, zipcode, country))
