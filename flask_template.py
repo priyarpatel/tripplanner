@@ -186,16 +186,16 @@ def editcc():
         return render_template('editcc.html', form=form)
 
 class addattractionForm(Form):
-    name = StringField('Name', validators=[Required()])
+    name = StringField('Name', validators=[Required("Please enter the name of the attraction")])
     street_no = IntegerField('Street Number')
     street = StringField('Street')
-    city = StringField('City', validators=[Required()])
+    city = StringField('City', validators=[Required("Please enter the city")])
     state = StringField('State')
-    zipcode = IntegerField('Zip Code', validators=[Required()])
-    country = StringField('Country', validators=[Required()])
-    description = StringField('Description', validators=[Required()])
-    nearestpubtransit = StringField('Nearest Public Transit', validators=[Required()])
-    resreq = BooleanField('Reservation Required', validators=[Required()])
+    zipcode = IntegerField('Zip Code', validators=[Required("Please enter the zip code")])
+    country = StringField('Country', validators=[Required("Please enter the country")])
+    description = StringField('Description', validators=[Required("Please enter a description")])
+    nearestpubtransit = StringField('Nearest Public Transit', validators=[Required("Please enter the nearest public transit")])
+    resreq = BooleanField('Reservation Required')
     MonOpen = SelectField('Opening time on Monday', choices=[(1,'Not open on Monday'),(2,'08:00:00'),(3,'08:30:00'),(4,'09:00:00'),(5,'09:30:00'),(6,'10:00:00'),(7,'10:30:00'),(8,'11:00:00'),(9,'11:30:00'),(10,'12:00:00'),(11,'12:30:00'),(12,'13:00:00'),(13,'13:30:00'),(14,'14:00:00'),(15,'14:30:00'),(16,'15:00:00'),(17,'15:30:00'),(18,'16:00:00')])
     MonClosed = SelectField('Closing time on Monday', choices=[(1,'Not open on Monday'),(2,'15:00:00'),(3,'15:30:00'),(4,'16:00:00'),(5,'16:30:00'),(6,'17:00:00'),(7,'17:30:00'),(8,'18:00:00'),(9,'18:30:00'),(10,'19:00:00'),(11,'19:30:00'),(12,'20:00:00'),(13,'20:30:00'),(14,'21:00:00'),(15,'21:30:00'),(16,'22:00:00'),(17,'22:30:00'),(18,'23:00:00'),(19,'23:30:00'),(20,'23:59:59')])
     TuesOpen = SelectField('Opening time on Tuesday', choices=[(1,'Not open on Tuesday'),(2,'08:00:00'),(3,'08:30:00'),(4,'09:00:00'),(5,'09:30:00'),(6,'10:00:00'),(7,'10:30:00'),(8,'11:00:00'),(9,'11:30:00'),(10,'12:00:00'),(11,'12:30:00'),(12,'13:00:00'),(13,'13:30:00'),(14,'14:00:00'),(15,'14:30:00'),(16,'15:00:00'),(17,'15:30:00'),(18,'16:00:00')])
@@ -229,7 +229,10 @@ def addattraction():
     #verification and struggle bus sql things
     #http://code.tutsplus.com/tutorials/intro-to-flask-adding-a-contact-page--net-28982
     if request.method=="POST":
-        return "Form posted"
+        if form.validate()==False:
+            return render_template('ADMINONLYaddattractionpage.html', form=form)
+        else:
+            return 'Form posted'
     elif request.method=="GET":
         return render_template('ADMINONLYaddattractionpage.html', form=form)
 
