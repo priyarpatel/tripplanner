@@ -240,7 +240,7 @@ def editcc():
             zipcode=form.zipcode.data
             country=str(form.country.data)
             #cursor = db.cursor()
-            #sql1=("insert into user_address(email,street_no, street, city, state,zip,country)"+
+            #sql1=("update user_address(email,street_no, street, city, state,zip,country)"+
             #"values('%s', %i, '%s', '%s', '%s', %i, '%s')" %(email, street_no, street, city, state, zipcode, country))
             #sql2=("insert into credit_card values(credit_card_number,cvv,exp_yr,exp_mo,name_on_card,address_id)"+
             #"values(%i, %i, %i, %i, '%s', %i)" %(ccn,cvv,exp_yr,exp_mo,name,street_no))
@@ -388,7 +388,7 @@ def editprof():
             cursor.execute(sql2)
             cursor.close()
             db.commit()
-            return "successful"
+            return redirect(url_for('userprofile'))
     elif request.method=="GET":
         return render_template('editprof.html', form=form, columns=column_names, name=user)
 
