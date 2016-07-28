@@ -130,14 +130,6 @@ def attractioncontrols():
 def attrsearch():
     return render_template('attractionsearch.html')
 
-class editccForm(Form):
-    name_on_card = StringField('Name', validators=[Required()])
-    credit_card_number = StringField('Credit Card Number', validators=[Required()])
-    CVV = StringField('CVV', validators=[Required()])
-    expiration_year = StringField('Expiration Year', validators=[Required()])
-    expiration_month = StringField('Expiration Month', validators=[Required()])
-    submit = SubmitField('Submit')
-
 @app.route('/editcc', methods=['GET','POST'])
 def editcc():
     form = editccForm()
@@ -147,20 +139,33 @@ def editcc():
     elif request.method=="GET":
         return render_template('editcc.html', form=form)
 
+class editccForm(Form):
+    name_on_card = StringField('Name', validators=[Required()])
+    credit_card_number = StringField('Credit Card Number', validators=[Required()])
+    CVV = StringField('CVV', validators=[Required()])
+    expiration_year = StringField('Expiration Year', validators=[Required()])
+    expiration_month = StringField('Expiration Month', validators=[Required()])
+    submit = SubmitField('Submit')
+
+@app.route('/editprof/<user>')
 @app.route('/editprof', methods=['GET','POST'])
 def editprof():
+    user = session['email'].split('@')[0]
+    cursor = db.cursor()
+    cursor.execute("select first_name, last_name, email from user where email = %s",
+        (session['email']))
+    user = cursor.fetchall()
+    column_names = [desc[0] for desc in cursor.description]
+    cursor.close()
     form = editprofForm()
     #verification and struggle bus sql things
     if request.method=="POST":
         return "Form posted"
     elif request.method=="GET":
-        return render_template('editprof.html', form=form)
+        return render_template('editprof.html', form=form, columns=column_names, name=user)
 
 class editprofForm(Form):
-    first_name = StringField('First Name', validators=[Required()])
-    last_name = StringField('Last Name', validators=[Required()])
-    email = StringField('E-Mail', validators=[Required()])
-    password = StringField('Password', validators=[Required()])
+    password = StringField('Change Password', validators=[Required()])
     street_no = StringField('Street Number', validators=[Required()])
     street = StringField('Street', validators=[Required()])
     city = StringField('City', validators=[Required()])
