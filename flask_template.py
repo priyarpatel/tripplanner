@@ -51,7 +51,7 @@ def home():
     cursor.execute(
         "select distinct city as City, start_date as Date from trip " +
         # "join activity using (trip_id) " +
-        "where start_date >= CURDATE() and email = %s order by trip_id",
+        "where start_date >= CURDATE() and email = %s",
         (session['email']))
     Trip = namedtuple('Trip', ['city', 'date'])
     trips = [Trip._make(row) for row in cursor.fetchall()]
