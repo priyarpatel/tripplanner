@@ -68,9 +68,9 @@ def home():
                            tid = trip)
 class createtripForm(Form):
     city = SelectField('City', choices=[], validators=[Required()])
-    start = DateTimeField('Start Date (YYYY-MM-DD HH-MM-SS)',
+    start = DateTimeField('Start Date (YYYY-MM-DD HH:MM:SS)',
         format='%Y-%m-%d %H:%M:%S', validators=[Required()])
-    end = DateTimeField('End Date (YYYY-MM-DD HH-MM-SS)',
+    end = DateTimeField('End Date (YYYY-MM-DD HH:MM:SS)',
         format='%Y-%m-%d %H:%M:%S', validators=[Required()])
     submit = SubmitField('Create Trip')
 
@@ -86,6 +86,7 @@ def createtrip():
     if request.method=="POST":
         if form.validate() == False:
             flash('All fields are required.')
+            return render_template('createtrip.html', form=form)
         else:
             return 'Form posted.'
     elif request.method=="GET":
