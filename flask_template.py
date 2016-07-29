@@ -618,40 +618,45 @@ def addattraction():
 @app.route('/registration', methods=['GET','POST'])
 def registration():
     form = registrationForm()
-    #SQL insert statements
     if request.method=="POST":
         if form.validate()==False:
             return render_template('registration.html', form=form)
         else:
-            email=str(form.email.data)
-            first_name=str(form.first_name.data)
-            last_name=str(form.last_name.data)
-            password=str(form.password.data)
+            email=form.email.data
+            first_name=form.first_name.data
+            last_name=form.last_name.data
+            password=form.password.data
             on_hold=0
             is_admin=0
-            street_no=int(form.street_no.data)
-            street=str(form.street.data)
-            city=str(form.city.data)
-            state=str(form.state.data)
-            zip_co=int(form.zip_co.data)
-            country=str(form.country.data)
-            credit_card_number=int(form.credit_card_number.data)
-            cvv=int(form.cvv.data)
-            exp_yr=int(form.exp_yr.data)
-            exp_mo=int(form.exp_mo.data)
-            name_on_card=str(form.name_on_card.data)
+            street_no=form.street_no.data
+            street=form.street.data
+            city=form.city.data
+            state=form.state.data
+            zip_co=form.zip_co.data
+            country=form.country.data
+            credit_card_number=form.credit_card_number.data
+            cvv=form.cvv.data
+            exp_yr=form.exp_yr.data
+            exp_mo=form.exp_mo.data
+            name_on_card=form.name_on_card.data
             cursor = db.cursor()
             sql1=("insert into user (email, first_name, last_name, password, on_hold, is_admin)" +
-                "values('%s','%s','%s','%s',%i,%i)" % (email, first_name, last_name, password, on_hold, is_admin))
+                "values('%s','%s','%s','%s',%s,%s)" % (email, first_name, last_name, password, on_hold, is_admin))
             sql2=("insert into user_address (street_no, street, city, state, zip, country)" +
-                "values(%i,'%s','%s','%s',%i,'%s')" % (street_no, street, city, state, zip_co, country))
+                "values(%s,'%s','%s','%s',%s,'%s')" % (street_no, street, city, state, zip_co, country))
             sql3=("insert into credit_card (credit_card_number,cvv,exp_yr,exp_mo,name_on_card, email)" +
-                "values(%i,%i,%i,%i,'%s','%s')" % (credit_card_number,cvv,exp_yr,exp_mo,name_on_card, email))
+                "values(%s,%s,%s,%s,'%s','%s')" % (credit_card_number,cvv,exp_yr,exp_mo,name_on_card, email))
             cursor.execute(sql1)
             cursor.execute(sql2)
             cursor.execute(sql3)
-            cursor.close()
             db.commit()
+            cursor.execute("select email, first_name, last_name " +
+                       "from user where email = %s",
+                       (form.email.data,))
+            rows = cursor.fetchall()
+            cursor.close()
+            session['email'] = rows[0][0]
+            session['customer_name'] = "{} {}".format(rows[0][1], rows[0][2])
             return redirect(url_for('home'))
     elif request.method=="GET":
         return render_template('registration.html', form=form)
