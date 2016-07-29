@@ -172,6 +172,7 @@ def usercontrols():
 def userinfo(row):
 	row=ast.literal_eval(row)
 	uid=row[0]
+	cursor=db.cursor()
 	sql2= ("select * from user join user_address using(email) where email='%s'" % (uid))
 	cursor.execute(sql2)
 	userinfo=cursor.fetchall()
@@ -229,6 +230,13 @@ def edituser(uid):
         return render_template('edituser.html', form=form, uid=uid)
     return render_template ('edituser.html', form=form, uid=uid)
 
+@app.route('/deleteuser/<uid>')
+def deleteuser(uid):
+	cursor=db.cursor()
+	sql1=("delete from user where email=%s" % (uid))
+	cursor.execute(sql1)
+	cursor.close()
+	return redirect(url_for("usercontrols"))
 
 @app.route('/attractioncontrols')
 def attractioncontrols():
