@@ -193,7 +193,7 @@ def attractioninfopage(row):
 
 @app.route('/editattraction/<aid>', methods=['GET','POST'])
 def editattraction(aid):
-    form = addattractionForm()
+    form = editattractionForm()
     if request.method=="POST":
         if form.validate()==False:
             return render_template('editattraction.html', form=form)
@@ -306,7 +306,35 @@ class addattractionForm(Form):
     country = StringField('Country', validators=[Required("Please enter the country")])
     description = StringField('Description', validators=[Required("Please enter a description")])
     nearestpubtransit = StringField('Nearest Public Transit', validators=[Required("Please enter the nearest public transit")])
-    price=FloatField("Price")
+    price = FloatField("Price")
+    resreq = BooleanField('Reservation Required')
+    MonOpen = StringField('Opening hour on Monday (in the form HH:MM:SS)')
+    MonClose = StringField('Closing hour on Monday (in the form HH:MM:SS)')
+    TuesOpen = StringField('Opening hour on Tuesday (in the form HH:MM:SS)')
+    TuesClose = StringField('Closing hour on Tuesday (in the form HH:MM:SS)')
+    WedOpen = StringField('Opening hour on Wednesday (in the form HH:MM:SS)')
+    WedClose = StringField('Closing hour on Wednesday (in the form HH:MM:SS)')
+    ThursOpen = StringField('Opening hour on Thursday (in the form HH:MM:SS)')
+    ThursClose = StringField('Closing hour on Thursday (in the form HH:MM:SS)')
+    FriOpen = StringField('Opening hour on Friday (in the form HH:MM:SS)')
+    FriClose = StringField('Closing hour on Friday (in the form HH:MM:SS)')
+    SatOpen = StringField('Opening hour on Saturday (in the form HH:MM:SS)')
+    SatClose = StringField('Closing hour on Saturday (in the form HH:MM:SS)')
+    SunOpen = StringField('Opening hour on Sunday (in the form HH:MM:SS)')
+    SunClose = StringField('Closing hour on Sunday (in the form HH:MM:SS)')
+    submit = SubmitField('Add Attraction')
+
+class editattractionForm(Form):
+    name = StringField('Name', validators=[Required("Please enter the name of the attraction")])
+    street_no = IntegerField('Street Number')
+    street = StringField('Street')
+    city = StringField('City', validators=[Required("Please enter the city")])
+    state = StringField('State')
+    zipcode = IntegerField('Zip Code', validators=[Required("Please enter the zip code")])
+    country = StringField('Country', validators=[Required("Please enter the country")])
+    description = StringField('Description', validators=[Required("Please enter a description")])
+    nearestpubtransit = StringField('Nearest Public Transit', validators=[Required("Please enter the nearest public transit")])
+    price = FloatField("Price")
     resreq = BooleanField('Reservation Required')
     submit = SubmitField('Add Attraction')
 
@@ -351,14 +379,121 @@ def addattraction():
             nearestpubtransit=str(form.nearestpubtransit.data)
             price=form.price.data
             resreq=form.resreq.data
+            MonOpen=form.MonOpen.data
+            MonClose=form.MonClose.data
+            TuesOpen=form.TuesOpen.data
+            TuesClose=form.TuesClose.data
+            WedOpen=form.WedOpen.data
+            WedClose=form.WedClose.data
+            ThursOpen=form.ThursOpen.data
+            ThursClose=form.ThursClose.data
+            FriOpen=form.FriOpen.data
+            FriClose=form.FriClose.data
+            SatOpen=form.SatOpen.data
+            SatClose=form.SatClose.data
+            SunOpen=form.SunOpen.data
+            SunClose=form.SunClose.data
             if resreq==True:
                 resreq=1
             else:
                 resreq=0
+            if MonOpen:
+                pass
+            else:
+                MonOpen="NULL"
+            if MonClose:
+                pass
+            else:
+                MonClose="NULL"
+            if TuesOpen:
+                pass
+            else:
+                TuesOpen="NULL"
+            if TuesClose:
+                pass
+            else:
+                TuesClose="NULL"
+            if WedOpen:
+                pass
+            else:
+                WedOpen="NULL"
+            if WedClose:
+                pass
+            else:
+                WedClose="NULL"
+            if ThursOpen:
+                pass
+            else:
+                ThursOpen="NULL"
+            if ThursClose:
+                pass
+            else:
+                ThursClose="NULL"
+            if FriOpen:
+                pass
+            else:
+                FriOpen="NULL"
+            if FriClose:
+                pass
+            else:
+                FriClose="NULL"
+            if SatOpen:
+                pass
+            else:
+                SatOpen="NULL"
+            if SatClose:
+                pass
+            else:
+                SatClose="NULL"
+            if SunOpen:
+                pass
+            else:
+                SunOpen="NULL"
+            if SunClose:
+                pass
+            else:
+                SunClose="NULL"
             cursor = db.cursor()
             sql1=("insert into attraction (name, street_no, street, city, state, zip, country, description, nearest_pub_transit, price, reservation_required)" +
                 "values('%s',%i,'%s','%s','%s',%i,'%s','%s','%s',%i,%i)" % (name, street_no, street, city, state, zipcode, country, description, nearestpubtransit, price, resreq))
+            sql2=("select attraction_id from attraction where name='%s'" % (name))
             cursor.execute(sql1)
+            cursor.close()
+            db.commit()
+            cursor=db.cursor()
+            cursor.execute(sql2)
+            aid=cursor.fetchone()
+            aid=str(aid)
+            aid=aid[1:-2]
+            aid=int(aid)
+            if MonOpen != 'NULL':
+            	sql3=("insert into attraction_hours (attraction_id, day_of_week,hour_open,hour_close)"+
+            		"values(%s,'Monday','%s','%s')" % (aid,MonOpen,MonClose))
+            	cursor.execute(sql3)
+            if TuesOpen != 'NULL':
+            	sql3=("insert into attraction_hours (attraction_id, day_of_week,hour_open,hour_close)"+
+            		"values(%s,'Tuesday','%s','%s')" % (aid,TuesOpen,TuesClose))
+            	cursor.execute(sql3)
+            if WedOpen != 'NULL':
+            	sql3=("insert into attraction_hours (attraction_id, day_of_week,hour_open,hour_close)"+
+            		"values(%s,'Wednesday','%s','%s')" % (aid,WedOpen,WedClose))
+            	cursor.execute(sql3)
+            if ThursOpen != 'NULL':
+            	sql3=("insert into attraction_hours (attraction_id, day_of_week,hour_open,hour_close)"+
+            		"values(%s,'Thursday','%s','%s')" % (aid,ThursOpen,ThursClose))
+            	cursor.execute(sql3)
+            if FriOpen != 'NULL':
+            	sql3=("insert into attraction_hours (attraction_id, day_of_week,hour_open,hour_close)"+
+            		"values(%s,'Friday','%s','%s')" % (aid,FriOpen,FriClose))
+            	cursor.execute(sql3)
+            if SatOpen != 'NULL':
+            	sql3=("insert into attraction_hours (attraction_id, day_of_week,hour_open,hour_close)"+
+            		"values(%s,'Saturday','%s','%s')" % (aid,SatOpen,SatClose))
+            	cursor.execute(sql3)
+            if SunOpen != 'NULL':
+            	sql3=("insert into attraction_hours (attraction_id, day_of_week,hour_open,hour_close)"+
+            		"values(%s,'Sunday','%s','%s')" % (aid,SunOpen,SunClose))
+            	cursor.execute(sql3)
             cursor.close()
             db.commit()
             return redirect(url_for('attractioncontrols'))
