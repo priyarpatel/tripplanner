@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Edit Attraction{% endblock %}
+
+
+{% block content %}
+<h1>Edit Attraction</h1>
+{% import "bootstrap/wtf.html" as wtf %}
+{{ wtf.quick_form(form) }}
+{% endblock %}

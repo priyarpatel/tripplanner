@@ -3,7 +3,7 @@ from flask import Flask, render_template, session, redirect, url_for, flash, req
 from flask_bootstrap import Bootstrap
 from flask_wtf import Form
 from wtforms import (StringField, SubmitField, IntegerField, BooleanField,
-SelectField, DateTimeField, validators, ValidationError, RadioField)
+SelectField, FloatField, DateTimeField, validators, ValidationError, RadioField)
 from wtforms.validators import Required
 import pymysql
 import getpass
@@ -163,8 +163,6 @@ def usercontrols():
     cursor.execute(
         "select last_name, first_name, email from user order by last_name asc")
     rows=cursor.fetchall()
-    edit= SubmitField("Edit")
-    delete= SubmitField("Delete")
     column_names=[desc[0] for desc in cursor.description]
     cursor.close()
     return render_template('ADMINONLYusercontrolpage.html',
@@ -181,17 +179,63 @@ def attractioncontrols():
     return render_template('ADMINONLYattractioncontrolpage.html',
                            columns=column_names, rows=attractions)
 
-@app.route('/attractioneditpage/<row>')
-def attractioneditpage(row):
-    row=ast.literal_eval(row)
-    aid=row[0]
-    # cursor = db.cursor()
-    # sql2= ("select * from attraction where attraction_id=%i" % (aid))
-    # cursor.execute(sql2)
-    # attractioninfo=cursor.fetchall()
-    # column_names=[desc[0] for desc in cursor.description]
-    # cursor.close()
-    return render_template('attractionschedulespage.html', aid=aid, row=row)
+@app.route('/attractioninfopage/<row>')
+def attractioninfopage(row):
+	row=ast.literal_eval(row)
+	aid=row[0]
+	cursor = db.cursor()
+	sql2= ("select * from attraction where attraction_id=%i" % (aid))
+	cursor.execute(sql2)
+	attractioninfo=cursor.fetchall()
+	column_names=[desc[0] for desc in cursor.description]
+	cursor.close()
+	return render_template('attractioneditpage.html', columns=column_names, rows=attractioninfo, aid=aid)
+
+@app.route('/editattraction/<aid>', methods=['GET','POST'])
+def editattraction(aid):
+    form = addattractionForm()
+    if request.method=="POST":
+        if form.validate()==False:
+            return render_template('editattraction.html', form=form)
+        else:
+            name=str(form.name.data)
+            street_no=form.street_no.data
+            if street_no:
+                pass
+            else:
+                street_no="NULL"
+            street=str(form.street.data)
+            if street:
+                pass
+            else:
+                street="NULL"
+            city=str(form.city.data)
+            state=str(form.state.data)
+            if state:
+                pass
+            else:
+                state="NULL"
+            zipcode=form.zipcode.data
+            country=str(form.country.data)
+            description=str(form.description.data)
+            nearestpubtransit=str(form.nearestpubtransit.data)
+            price=form.price.data
+            resreq=form.resreq.data
+            if resreq==True:
+                resreq=1
+            else:
+                resreq=0
+            cursor = db.cursor()
+            sql1=("update attraction set name='%s', street_no= %i, street='%s', city='%s',state='%s',zip=%s,country='%s',description='%s',nearest_pub_transit='%s',price=%s,reservation_required=%s where attraction_id=%s" %(name,street_no,street,city,state,zipcode,country,description,nearestpubtransit,price,resreq,aid))
+            cursor.execute(sql1)
+            sql2=("select attraction_id, name, city, country from attraction where attraction_id=%s" % (aid))
+            cursor.execute(sql2)
+            row=cursor.fetchall()
+            cursor.close()
+            db.commit()
+            return redirect(url_for("attractioncontrols"))
+    elif request.method=="GET":
+        return render_template('editattraction.html', form=form)
 
 @app.route('/attractionsearch')
 def attrsearch():
@@ -214,9 +258,8 @@ class editccForm(Form):
 @app.route('/editcc', methods=['GET','POST'])
 def editcc():
     form = editccForm()
-    #verification and struggle bus sql things
     if request.method=="POST":
-        if form.validate()==False:
+        if form.validate() == False:
             return render_template('editcc.html', form=form)
         else:
             name=str(form.name_on_card.data)
@@ -263,7 +306,7 @@ class addattractionForm(Form):
     country = StringField('Country', validators=[Required("Please enter the country")])
     description = StringField('Description', validators=[Required("Please enter a description")])
     nearestpubtransit = StringField('Nearest Public Transit', validators=[Required("Please enter the nearest public transit")])
-    price=IntegerField("Price")
+    price=FloatField("Price")
     resreq = BooleanField('Reservation Required')
     submit = SubmitField('Add Attraction')
 
@@ -281,8 +324,6 @@ class registrationForm(Form):
 @app.route('/addattraction', methods=['GET','POST'])
 def addattraction():
     form = addattractionForm()
-    #verification and struggle bus sql things
-    #http://code.tutsplus.com/tutorials/intro-to-flask-adding-a-contact-page--net-28982
     if request.method=="POST":
         if form.validate()==False:
             return render_template('ADMINONLYaddattractionpage.html', form=form)
