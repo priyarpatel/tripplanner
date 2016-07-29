@@ -417,6 +417,17 @@ class registrationForm(Form):
     first_name = StringField('First Name', validators=[Required()])
     last_name = StringField('Last Name', validators=[Required()])
     password = StringField('Password', validators=[Required()])
+    street_no = StringField('Street Number', validators=[Required()])
+    street = StringField('Street Name', validators=[Required()])
+    city = StringField('City', validators=[Required()])
+    state = StringField('State')
+    zip_co = StringField('Zip', validators=[Required()])
+    country = StringField('Country', validators=[Required()])
+    credit_card_number=StringField('Credit Card Number',validators=[Required()])
+    cvv=StringField('CVV',validators=[Required()])
+    exp_yr=StringField('Expiration Year',validators=[Required()])
+    exp_mo=StringField('Expiration Month',validators=[Required()])
+    name_on_card=StringField('Name on Card',validators=[Required()])
     submit = SubmitField('Create Account')
 
 @app.route('/addattraction', methods=['GET','POST'])
@@ -584,13 +595,30 @@ def registration():
             password=str(form.password.data)
             on_hold=0
             is_admin=0
+            street_no=int(form.street_no.data)
+            street=str(form.street.data)
+            city=str(form.city.data)
+            state=str(form.state.data)
+            zip_co=int(form.zip_co.data)
+            country=str(form.country.data)
+            credit_card_number=int(form.credit_card_number.data)
+            cvv=int(form.cvv.data)
+            exp_yr=int(form.exp_yr.data)
+            exp_mo=int(form.exp_mo.data)
+            name_on_card=str(form.name_on_card.data)
             cursor = db.cursor()
             sql1=("insert into user (email, first_name, last_name, password, on_hold, is_admin)" +
                 "values('%s','%s','%s','%s',%i,%i)" % (email, first_name, last_name, password, on_hold, is_admin))
+            sql2=("insert into user_address (street_no, street, city, state, zip, country)" +
+                "values(%i,'%s','%s','%s',%i,'%s')" % (street_no, street, city, state, zip_co, country))
+            sql3=("insert into credit_card (credit_card_number,cvv,exp_yr,exp_mo,name_on_card, email)" +
+                "values(%i,%i,%i,%i,'%s','%s')" % (credit_card_number,cvv,exp_yr,exp_mo,name_on_card, email))
             cursor.execute(sql1)
+            cursor.execute(sql2)
+            cursor.execute(sql3)
             cursor.close()
             db.commit()
-            return redirect(url_for('userprofile'))
+            return redirect(url_for('home'))
     elif request.method=="GET":
         return render_template('registration.html', form=form)
 
