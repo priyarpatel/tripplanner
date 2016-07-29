@@ -137,9 +137,34 @@ def trip(tripid):
 def edittrip():
     return render_template('editttrip.html')
 
-@app.route('/pay')
-def pay():
-    return render_template('pay.html')
+class payForm(Form):
+	isokay = BooleanField('Is this amount okay?',validators=[Required("You must check the box to continue.")])
+	submit = SubmitField('Pay Now')
+
+@app.route('/pay/<tripid>',methods=['GET', 'POST'])
+def pay(tripid):
+    cursor = db.cursor()
+    sql1=("select sum(attraction.price) as Total from attraction join activity using(attraction_id) where activity.trip_id=%s" % (tripid))
+    cursor.execute(sql1)
+    amount = cursor.fetchall()
+    column_names = [desc[0] for desc in cursor.description]
+    cursor.close()
+    form=payForm()
+    if request.method=="POST":
+        if form.validate()==False:
+            flash('You must check the box before you continue.')
+            return render_template('pay.html', form=form, tripid=tripid, rows=amount, columns=column_names)
+        else:
+            isokay=form.isokay.data
+            cursor=db.cursor()
+            sql1=("update trip set purchase_completed= 1 where trip_id=%s" %(tripid))
+            cursor.execute(sql1)
+            cursor.close()
+            db.commit()
+            return redirect(url_for("home"))
+    elif request.method=="GET":
+        return render_template('pay.html', form=form, tripid=tripid, rows=amount, columns=column_names)
+    return render_template('pay.html', form=form, tripid=tripid, rows=amount, columns=column_names)
 
 @app.route('/userprofile/<user>')
 @app.route('/userprofile')
@@ -162,12 +187,82 @@ def userprofile(user = None):
 def usercontrols():
     cursor = db.cursor()
     cursor.execute(
-        "select last_name, first_name, email from user order by last_name asc")
+        "select email, last_name, first_name from user order by email asc")
     rows=cursor.fetchall()
     column_names=[desc[0] for desc in cursor.description]
     cursor.close()
     return render_template('ADMINONLYusercontrolpage.html',
                            columns=column_names, rows=rows)
+
+@app.route('/userinfo/<row>')
+def userinfo(row):
+	row=ast.literal_eval(row)
+	uid=row[0]
+	cursor=db.cursor()
+	sql2= ("select * from user join user_address using(email) where email='%s'" % (uid))
+	cursor.execute(sql2)
+	userinfo=cursor.fetchall()
+	column_names=[desc[0] for desc in cursor.description]
+	cursor.close()
+	return render_template('userinfo.html', columns=column_names, rows=userinfo, uid=uid)
+
+class edituserForm(Form):
+    street_no = StringField('Street Number')
+    street = StringField('Street')
+    city = StringField('City', validators=[Required()])
+    state = StringField('State')
+    zipcode = StringField('Zip Code', validators=[Required()])
+    country = StringField('Country', validators=[Required()])
+    ishold = BooleanField('Is this user on hold?')
+    isadmin = BooleanField('Is this user an admin?')
+    submit = SubmitField('Submit')
+
+@app.route('/edituser/<uid>',methods=['GET', 'POST'])
+def edituser(uid):
+    form=edituserForm()
+    if request.method=="POST":
+        if form.validate()==False:
+            return render_template('edituser.html',form=form, uid=uid)
+        else:
+            street_no=form.street_no.data
+            if street_no:
+                pass
+            else:
+                street_no="NULL"
+            street=form.street.data
+            if street:
+                pass
+            else:
+                street="NULL"
+            city=form.city.data
+            state=form.state.data
+            if state:
+                pass
+            else:
+                state="NULL"
+            zipcode=form.zipcode.data
+            country=form.country.data
+            ishold=form.ishold.data
+            isadmin=form.isadmin.data
+            cursor=db.cursor()
+            sql1=("update user_address set street_no= %s, street='%s', city='%s',state='%s',zip='%s',country='%s' where email='%s'" %(street_no,street,city,state,zipcode,country,uid))
+            sql2=("update user set on_hold=%s, is_admin=%s where email = '%s'" %(ishold, isadmin, uid))
+            cursor.execute(sql1)
+            cursor.execute(sql2)
+            cursor.close()
+            db.commit()
+            return redirect(url_for('usercontrols'))
+    elif request.method=="GET":
+        return render_template('edituser.html', form=form, uid=uid)
+    return render_template ('edituser.html', form=form, uid=uid)
+
+@app.route('/deleteuser/<uid>')
+def deleteuser(uid):
+	cursor=db.cursor()
+	sql1=("delete from user where email=%s" % (uid))
+	cursor.execute(sql1)
+	cursor.close()
+	return redirect(url_for("usercontrols"))
 
 @app.route('/attractioncontrols')
 def attractioncontrols():
@@ -189,8 +284,20 @@ def attractioninfopage(row):
 	cursor.execute(sql2)
 	attractioninfo=cursor.fetchall()
 	column_names=[desc[0] for desc in cursor.description]
+	sql4= ("select * from attraction_hours where attraction_id=%i" % (aid))
+	cursor.execute(sql4)
+	attractionhours=cursor.fetchall()
+	columns2=[desc[0] for desc in cursor.description]
 	cursor.close()
-	return render_template('attractioneditpage.html', columns=column_names, rows=attractioninfo, aid=aid)
+	return render_template('attractioneditpage.html', columns=column_names, rows=attractioninfo, aid=aid, rows2=attractionhours,columns2=columns2)
+
+@app.route('/deleteattraction/<aid>')
+def deleteattraction(aid):
+	cursor=db.cursor()
+	sql1=("delete from attraction where attraction_id=%s" % (aid))
+	cursor.execute(sql1)
+	cursor.close()
+	return redirect(url_for("attractioncontrols"))
 
 @app.route('/editattraction/<aid>', methods=['GET','POST'])
 def editattraction(aid):
@@ -340,15 +447,22 @@ class editattractionForm(Form):
     submit = SubmitField('Add Attraction')
 
 class registrationForm(Form):
-    name = StringField('Name', validators=[Required()])
+    email=StringField('Email', validators=[Required()])
+    first_name = StringField('First Name', validators=[Required()])
+    last_name = StringField('Last Name', validators=[Required()])
+    password = StringField('Password', validators=[Required()])
     street_no = StringField('Street Number', validators=[Required()])
-    street = StringField('Street', validators=[Required()])
+    street = StringField('Street Name', validators=[Required()])
     city = StringField('City', validators=[Required()])
-    state = StringField('State', validators=[Required()])
-    zipcode = StringField('Zip Code', validators=[Required()])
+    state = StringField('State')
+    zip_co = StringField('Zip', validators=[Required()])
     country = StringField('Country', validators=[Required()])
+    credit_card_number=StringField('Credit Card Number',validators=[Required()])
+    cvv=StringField('CVV',validators=[Required()])
+    exp_yr=StringField('Expiration Year',validators=[Required()])
+    exp_mo=StringField('Expiration Month',validators=[Required()])
+    name_on_card=StringField('Name on Card',validators=[Required()])
     submit = SubmitField('Create Account')
-
 
 @app.route('/addattraction', methods=['GET','POST'])
 def addattraction():
@@ -506,7 +620,39 @@ def registration():
     form = registrationForm()
     #SQL insert statements
     if request.method=="POST":
-        return "Form posted"
+        if form.validate()==False:
+            return render_template('registration.html', form=form)
+        else:
+            email=str(form.email.data)
+            first_name=str(form.first_name.data)
+            last_name=str(form.last_name.data)
+            password=str(form.password.data)
+            on_hold=0
+            is_admin=0
+            street_no=int(form.street_no.data)
+            street=str(form.street.data)
+            city=str(form.city.data)
+            state=str(form.state.data)
+            zip_co=int(form.zip_co.data)
+            country=str(form.country.data)
+            credit_card_number=int(form.credit_card_number.data)
+            cvv=int(form.cvv.data)
+            exp_yr=int(form.exp_yr.data)
+            exp_mo=int(form.exp_mo.data)
+            name_on_card=str(form.name_on_card.data)
+            cursor = db.cursor()
+            sql1=("insert into user (email, first_name, last_name, password, on_hold, is_admin)" +
+                "values('%s','%s','%s','%s',%i,%i)" % (email, first_name, last_name, password, on_hold, is_admin))
+            sql2=("insert into user_address (street_no, street, city, state, zip, country)" +
+                "values(%i,'%s','%s','%s',%i,'%s')" % (street_no, street, city, state, zip_co, country))
+            sql3=("insert into credit_card (credit_card_number,cvv,exp_yr,exp_mo,name_on_card, email)" +
+                "values(%i,%i,%i,%i,'%s','%s')" % (credit_card_number,cvv,exp_yr,exp_mo,name_on_card, email))
+            cursor.execute(sql1)
+            cursor.execute(sql2)
+            cursor.execute(sql3)
+            cursor.close()
+            db.commit()
+            return redirect(url_for('home'))
     elif request.method=="GET":
         return render_template('registration.html', form=form)
 
@@ -521,7 +667,6 @@ def editprof():
     column_names = [desc[0] for desc in cursor.description]
     cursor.close()
     form = editprofForm()
-    #verification and struggle bus sql things
     if request.method=="POST":
         if form.validate()==False:
             return render_template('editprof.html',form=form)
