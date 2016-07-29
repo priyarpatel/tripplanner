@@ -130,15 +130,40 @@ def trip(tripid):
         trip_paid = False
     cursor.close()
     return render_template('trip.html', trips = trips, city = trip_city,
-    paid = trip_paid)
+    paid = trip_paid, tripid=tripid)
 
 @app.route('/edittrip')
 def edittrip():
     return render_template('editttrip.html')
 
-@app.route('/pay')
-def pay():
-    return render_template('pay.html')
+class payForm(Form):
+	isokay = BooleanField('Is this amount okay?',validators=[Required("You must check the box to continue.")])
+	submit = SubmitField('Pay Now')
+
+@app.route('/pay/<tripid>',methods=['GET', 'POST'])
+def pay(tripid):
+    cursor = db.cursor()
+    sql1=("select sum(attraction.price) as Total from attraction join activity using(attraction_id) where activity.trip_id=%s" % (tripid))
+    cursor.execute(sql1)
+    amount = cursor.fetchall()
+    column_names = [desc[0] for desc in cursor.description]
+    cursor.close()
+    form=payForm()
+    if request.method=="POST":
+        if form.validate()==False:
+            flash('You must check the box before you continue.')
+            return render_template('pay.html', form=form, tripid=tripid, rows=amount, columns=column_names)
+        else:
+            isokay=form.isokay.data
+            cursor=db.cursor()
+            sql1=("update trip set purchase_completed= 1 where trip_id=%s" %(tripid))
+            cursor.execute(sql1)
+            cursor.close()
+            db.commit()
+            return redirect(url_for("home"))
+    elif request.method=="GET":
+        return render_template('pay.html', form=form, tripid=tripid, rows=amount, columns=column_names)
+    return render_template('pay.html', form=form, tripid=tripid, rows=amount, columns=column_names)
 
 @app.route('/userprofile/<user>')
 @app.route('/userprofile')
