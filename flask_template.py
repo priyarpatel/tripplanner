@@ -161,12 +161,74 @@ def userprofile(user = None):
 def usercontrols():
     cursor = db.cursor()
     cursor.execute(
-        "select last_name, first_name, email from user order by last_name asc")
+        "select email, last_name, first_name from user order by email asc")
     rows=cursor.fetchall()
     column_names=[desc[0] for desc in cursor.description]
     cursor.close()
     return render_template('ADMINONLYusercontrolpage.html',
                            columns=column_names, rows=rows)
+
+@app.route('/userinfo/<row>')
+def userinfo(row):
+	row=ast.literal_eval(row)
+	uid=row[0]
+	sql2= ("select * from user join user_address using(email) where email='%s'" % (uid))
+	cursor.execute(sql2)
+	userinfo=cursor.fetchall()
+	column_names=[desc[0] for desc in cursor.description]
+	cursor.close()
+	return render_template('userinfo.html', columns=column_names, rows=userinfo, uid=uid)
+
+class edituserForm(Form):
+    street_no = StringField('Street Number')
+    street = StringField('Street')
+    city = StringField('City', validators=[Required()])
+    state = StringField('State')
+    zipcode = StringField('Zip Code', validators=[Required()])
+    country = StringField('Country', validators=[Required()])
+    ishold = BooleanField('Is this user on hold?')
+    isadmin = BooleanField('Is this user an admin?')
+    submit = SubmitField('Submit')
+
+@app.route('/edituser/<uid>',methods=['GET', 'POST'])
+def edituser(uid):
+    form=edituserForm()
+    if request.method=="POST":
+        if form.validate()==False:
+            return render_template('edituser.html',form=form, uid=uid)
+        else:
+            street_no=form.street_no.data
+            if street_no:
+                pass
+            else:
+                street_no="NULL"
+            street=form.street.data
+            if street:
+                pass
+            else:
+                street="NULL"
+            city=form.city.data
+            state=form.state.data
+            if state:
+                pass
+            else:
+                state="NULL"
+            zipcode=form.zipcode.data
+            country=form.country.data
+            ishold=form.ishold.data
+            isadmin=form.isadmin.data
+            cursor=db.cursor()
+            sql1=("update user_address set street_no= %s, street='%s', city='%s',state='%s',zip='%s',country='%s' where email='%s'" %(street_no,street,city,state,zipcode,country,uid))
+            sql2=("update user set on_hold=%s, is_admin=%s where email = '%s'" %(ishold, isadmin, uid))
+            cursor.execute(sql1)
+            cursor.execute(sql2)
+            cursor.close()
+            db.commit()
+            return redirect(url_for('usercontrols'))
+    elif request.method=="GET":
+        return render_template('edituser.html', form=form, uid=uid)
+    return render_template ('edituser.html', form=form, uid=uid)
+
 
 @app.route('/attractioncontrols')
 def attractioncontrols():
@@ -532,7 +594,6 @@ def editprof():
     column_names = [desc[0] for desc in cursor.description]
     cursor.close()
     form = editprofForm()
-    #verification and struggle bus sql things
     if request.method=="POST":
         if form.validate()==False:
             return render_template('editprof.html',form=form)

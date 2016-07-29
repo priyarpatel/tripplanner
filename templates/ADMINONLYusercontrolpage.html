@@ -10,12 +10,14 @@
 		{% for column in columns %}
 			<th>{{column}}</th>
 		{% endfor %}
+		<th>view user</th>
 	</tr>
 	{% for row in rows %}
 		<tr>
 			{% for cell in row %}
-				<td>{{cell}}</td>
+				<td><a href="userinfo/{{row}}">{{cell}}</a></td>
 			{% endfor %}
+			<td><a href="userinfo/{{row}}">View User</a></td>
 		</tr>
 	{% endfor %}
 </table>

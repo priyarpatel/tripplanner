@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %} User View {% endblock %}
+
+{% block content %}
+
+<h1>{{table}} User Info</h1>
+
+<a href="/edituser/{{uid}}">Edit User</a>
+
+<a href="/deleteuser/{{uid}}">Delete User</a>
+
+<table>
+	<tr>
+		{% for column in columns %}
+			<th>{{column}}</th>
+		{% endfor %}
+	</tr>
+	{% for row in rows %}
+		<tr>
+			{% for cell in row %}
+				<td>{{cell}}</td>
+			{% endfor %}
+		</tr>
+	{% endfor %}
+</table>
+
+{% endblock %}
