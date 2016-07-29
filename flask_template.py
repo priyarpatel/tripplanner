@@ -50,11 +50,11 @@ def index():
 def home():
     cursor = db.cursor()
     cursor.execute(
-        "select distinct city as City, start_date as Date from trip " +
+        "select distinct city as City, start_date as Date, trip_id from trip " +
         # "join activity using (trip_id) " +
         "where start_date >= CURDATE() and email = %s",
         (session['email']))
-    Trip = namedtuple('Trip', ['city', 'date'])
+    Trip = namedtuple('Trip', ['city', 'date', 'trip_id'])
     trips = [Trip._make(row) for row in cursor.fetchall()]
     cursor.execute("select is_admin from user where email = %s",
         (session['email']))
@@ -73,16 +73,15 @@ def home():
         trip_ids = None
     cursor.close()
     return render_template('home.html', trips=trips,
-                           user=session['customer_name'], admuser = admin,
-                           tid = trip_ids)
+                           user=session['customer_name'], admuser = admin)
 class createtripForm(Form):
     city = SelectField('City', choices=[],
         validators=[Required("Select a city.")])
-    start = DateTimeField('Start Date (YYYY-MM-DD HH:MM:SS)',
-        format='%Y-%m-%d %H:%M:%S', validators=[Required("Please enter a date " +
+    start = StringField('Start Date (YYYY-MM-DD)',
+         validators=[Required("Please enter a date " +
         "and time in the format specified.")])
-    end = DateTimeField('End Date (YYYY-MM-DD HH:MM:SS)',
-        format='%Y-%m-%d %H:%M:%S', validators=[Required("Please enter a date " +
+    end = StringField('End Date (YYYY-MM-DD)',
+        validators=[Required("Please enter a date " +
         "and time in the format specified.")])
     submit = SubmitField('Create Trip')
 
@@ -92,20 +91,23 @@ def createtrip():
     cursor = db.cursor()
     cursor.execute("select distinct city from attraction")
     form = createtripForm()
-    form.city.choices = [(i, tup[0]) for i,tup in enumerate(cursor.fetchall())]
+    form.city.choices = [(tup[0], tup[0]) for tup in cursor.fetchall()]
     #SQL and verification whyyyyyyyy
-    cursor.close()
     if request.method=="POST":
-        print(form.validate())
-        if form.validate() == False:
-            print(type(form.city))
-            print(type(form.start))
-            print(type(form.end))
-            flash('Please enter all information correctly.')
-            return render_template('createtrip.html', form=form)
-        else:
-            return 'Form posted.'
+        # if form.validate() == False:
+        #     flash('Please enter all information correctly.')
+        #     return render_template('createtrip.html', form=form)
+        # else:
+        print(form.city.data)
+        print(form.start.data)
+        print(form.end.data)
+        cursor.execute("insert into trip (email,start_date,end_date,city, total_cost, purchase_completed) " +
+            "values (%s,%s,%s,%s, 0.0, 0)", (session['email'],form.start.data,
+            form.end.data, form.city.data))
+        cursor.close()
+        return 'Form posted.'
     elif request.method=="GET":
+        cursor.close()
         return render_template('createtrip.html', form=form)
 
 @app.route('/trip/<tripid>')
@@ -121,15 +123,14 @@ def trip(tripid):
     trips = cursor.fetchall()
     cursor.execute("select attraction.city from trip join activity using (trip_id) " +
         "join attraction using (attraction_id) where trip_id = %s limit 1", ('1'))
-    trip_city = cursor.fetchone()[0]
     cursor.execute("select purchase_completed from trip where trip_id = %s",
         (tripid))
     if cursor.fetchone()[0] == 1:
-        trip_paid = True
+        trip_paid = None
     else:
-        trip_paid = False
+        trip_paid = True
     cursor.close()
-    return render_template('trip.html', trips = trips, city = trip_city,
+    return render_template('trip.html', trips = trips,
     paid = trip_paid)
 
 @app.route('/edittrip')
