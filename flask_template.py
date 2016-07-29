@@ -188,8 +188,20 @@ def attractioninfopage(row):
 	cursor.execute(sql2)
 	attractioninfo=cursor.fetchall()
 	column_names=[desc[0] for desc in cursor.description]
+	sql4= ("select * from attraction_hours where attraction_id=%i" % (aid))
+	cursor.execute(sql4)
+	attractionhours=cursor.fetchall()
+	columns2=[desc[0] for desc in cursor.description]
 	cursor.close()
-	return render_template('attractioneditpage.html', columns=column_names, rows=attractioninfo, aid=aid)
+	return render_template('attractioneditpage.html', columns=column_names, rows=attractioninfo, aid=aid, rows2=attractionhours,columns2=columns2)
+
+@app.route('/deleteattraction/<aid>')
+def deleteattraction(aid):
+	cursor=db.cursor()
+	sql1=("delete from attraction where attraction_id=%s" % (aid))
+	cursor.execute(sql1)
+	cursor.close()
+	return redirect(url_for("attractioncontrols"))
 
 @app.route('/editattraction/<aid>', methods=['GET','POST'])
 def editattraction(aid):
