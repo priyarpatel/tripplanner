@@ -3,7 +3,8 @@ from flask import Flask, render_template, session, redirect, url_for, flash, req
 from flask_bootstrap import Bootstrap
 from flask_wtf import Form
 from wtforms import (StringField, SubmitField, IntegerField, BooleanField,
-SelectField, FloatField, DateTimeField, validators, ValidationError, RadioField)
+SelectField, FloatField, DateTimeField, validators, ValidationError, RadioField,
+PasswordField)
 from wtforms.validators import Required
 import pymysql
 import getpass
@@ -23,7 +24,7 @@ def flash_errors(form):
 
 class LoginForm(Form):
     email = StringField('Email address', validators=[Required()])
-    password = StringField('Password', validators=[Required()])
+    password = PasswordField('Password', validators=[Required()])
     submit = SubmitField('Log in')
 
 @app.route('/', methods=['GET', 'POST'])
@@ -45,6 +46,13 @@ def index():
             flash('Email address not found in user database.')
             return redirect(url_for('index'))
     return render_template('index.html', form=form)
+
+@app.route('/logout')
+def logout():
+    session.pop('email', None)
+    session.pop('customer_name', None)
+    flash('You were logged out')
+    return redirect(url_for('index'))
 
 @app.route('/home')
 def home():
@@ -195,7 +203,7 @@ def userprofile(user = None):
     cursor.execute(
         "select user.last_name, user.first_name, user.email, user_address.street_no, user_address.street,"+
         " user_address.city, user_address.state, user_address.zip, user_address.country,"+
-        " credit_card.credit_card_number from user join user_address using(email) join credit_card using (email) where user.email = %s",(session['email']))
+        " credit_card.credit_card_number from user join user_address using (email) join credit_card using (email) where user.email = %s",(session['email']))
     user = cursor.fetchall()
     delete = SubmitField("Delete Credit Card")
     edit = SubmitField("Edit Profile")

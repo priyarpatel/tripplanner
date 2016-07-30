@@ -28,6 +28,7 @@
           </button>
           <a class="navbar-brand" href="#">Plan My Trip</a>
         </div>
+        {% if session['email'] %}
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li><a href="{{ url_for('home') }}">Home</a></li>
@@ -36,8 +37,10 @@
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li><a href="#">User: {{session['customer_name']}}</a></li>
+            <li><a href ="logout">Log out</a></li>
           </ul>
         </div><!--/.nav-collapse -->
+        {% endif %}
       </div>
     </nav>
 
