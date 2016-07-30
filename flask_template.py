@@ -58,8 +58,7 @@ def logout():
 def home():
     cursor = db.cursor()
     cursor.execute(
-        "select distinct city as City, start_date as Date, trip_id from trip " +
-        # "join activity using (trip_id) " +
+        "select distinct city as City, start_date, trip_id from trip " +
         "where start_date >= CURDATE() and email = %s",
         (session['email']))
     Trip = namedtuple('Trip', ['city', 'date', 'trip_id'])
@@ -113,7 +112,9 @@ def createtrip():
             "values (%s,%s,%s,%s, 0.0, 0)", (session['email'],form.start.data,
             form.end.data, form.city.data))
         cursor.close()
-        return render_template('home.html')
+        db.commit()
+        flash("Click on View Details to add activities to your new trip.")
+        return redirect(url_for('home'))
     elif request.method=="GET":
         cursor.close()
         return render_template('createtrip.html', form=form)
