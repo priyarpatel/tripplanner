@@ -135,12 +135,12 @@ def trip(tripid):
     cursor.execute("select purchase_completed from trip where trip_id = %s",
         (tripid))
     if cursor.fetchone()[0] == 1:
-        trip_paid = None
+        not_paid = None
     else:
-        trip_paid = True
+        not_paid = True
     cursor.close()
     return render_template('trip.html', trips = trips,
-    paid = trip_paid, tid = tripid, city = city)
+    unpaid = not_paid, tid = tripid, city = city)
 
 class deleteActivityForm(Form):
     activities = SelectField('Activity', choices=[],
