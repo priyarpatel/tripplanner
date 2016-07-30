@@ -34,8 +34,8 @@ def index():
         cursor = db.cursor()
         print("form.email.data=" + form.email.data)
         cursor.execute("select email, first_name, last_name " +
-                       "from user where email = %s",
-                       (form.email.data,))
+                       "from user where email = %s and password = %s",
+                       (form.email.data, form.password.data))
         rows = cursor.fetchall()
         if rows:
             print("successful login")
@@ -43,7 +43,7 @@ def index():
             session['customer_name'] = "{} {}".format(rows[0][1], rows[0][2])
             return redirect(url_for('home'))
         else:
-            flash('Email address not found in user database.')
+            flash('Please enter a correct email/password combination.')
             return redirect(url_for('index'))
     return render_template('index.html', form=form)
 
