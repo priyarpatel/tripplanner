@@ -105,7 +105,7 @@ def createtrip():
             "values (%s,%s,%s,%s, 0.0, 0)", (session['email'],form.start.data,
             form.end.data, form.city.data))
         cursor.close()
-        return 'Form posted.'
+        return render_template('home.html')
     elif request.method=="GET":
         cursor.close()
         return render_template('createtrip.html', form=form)
@@ -116,13 +116,14 @@ def trip(tripid):
     cursor = db.cursor()
     cursor.execute(
         "select attraction.name as Attraction, activity_date as Date, " +
-        "start_time as Start, stop_time as Ends, price as Price " +
+        "start_time as Start, stop_time as Ends, price as Price, " +
+        "nearest_pub_transit " +
         "from trip join activity using (trip_id) " +
         "join attraction using (attraction_id) where trip_id = %s",
         (tripid))
     trips = cursor.fetchall()
-    cursor.execute("select attraction.city from trip join activity using (trip_id) " +
-        "join attraction using (attraction_id) where trip_id = %s limit 1", ('1'))
+    cursor.execute("select city from trip where trip_id = %s", (tripid))
+    city = cursor.fetchone()[0]
     cursor.execute("select purchase_completed from trip where trip_id = %s",
         (tripid))
     if cursor.fetchone()[0] == 1:
@@ -131,11 +132,31 @@ def trip(tripid):
         trip_paid = True
     cursor.close()
     return render_template('trip.html', trips = trips,
-    paid = trip_paid)
+    paid = trip_paid, tid = tripid, city = city)
 
-@app.route('/edittrip')
-def edittrip():
-    return render_template('editttrip.html')
+class deleteActivityForm(Form):
+    activities = SelectField('Activity', choices=[],
+        validators=[Required("Select an activity to delete.")])
+    submit = SubmitField('Delete Activity')
+
+
+@app.route('/deleteactivity/<tripid>',  methods=['GET', 'POST'])
+def deleteactivity(tripid):
+    cursor = db.cursor()
+    form = deleteActivityForm()
+    cursor.execute("select activity_id, name from activity join attraction " +
+        "using (attraction_id) where trip_id = %s" % (tripid))
+    form.activities.choices = [(tup[0], tup[1]) for tup in cursor.fetchall()]
+    if request.method=="POST":
+        cursor.execute("delete from activity where activity_id=%s",
+            (form.activities.data))
+        cursor.close()
+        db.commit()
+        flash('Activity deleted from trip.')
+        return redirect(url_for('trip', tripid = tripid))
+    elif request.method=="GET":
+        cursor.close()
+        return render_template('deleteactivity.html', form=form, tripid = tripid)
 
 class payForm(Form):
 	isokay = BooleanField('Is this amount okay?',validators=[Required("You must check the box to continue.")])

@@ -6,16 +6,16 @@
 <html>
     <head> <title> Trip Details </title></head>
     <body>
-        <h1> My trip details </h1>
-        <p><a href = "{{url_for('edittrip')}}"> Edit current activites </a></p>
+        <h1> My trip to {{city}} </h1>
+        <p><a href = "{{url_for('deleteactivity', tripid = tid)}}"> Delete an activity </a></p>
         <p><a href = "{{url_for('attrsearch')}}"> Add more activities </a></p>
         {% if paid %}
-        <p><a href = "{{url_for('pay')}}"> Finalize and pay for trip </a></p>
+        <p><a href = "{{url_for('pay', tripid = tid)}}"> Finalize and pay for trip </a></p>
         {% endif %}
         <table>
           <tr>
               <th>Attraction</th><th>Date</th><th>Starts</th><th>Ends</th>
-              <th>Price</th>
+              <th>Price</th><th>Nearest Public Transit</th>
           </tr>
           {% for trip in trips %}
             <tr>
