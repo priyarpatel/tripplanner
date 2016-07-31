@@ -1,13 +1,16 @@
 {% extends "base.html" %}
-{% block title %} Search Activities {% endblock %}
-
+{% block title %} Search for Attractions {% endblock %}
 {% block content %}
 
+
 <html>
-    <head> <title> Search for activities </title></head>
-    <body>
-        <p> attraction search </p>
-    </body>
+    <head> <title> Search for an Attraction </title></head>
+    <h1/>Search by City</h1>
+    {% for message in get_flashed_messages() %}
+        <div class="flash">{{ message }}</div>
+    {% endfor %}
+    {% import "bootstrap/wtf.html" as wtf %}
+    {{ wtf.quick_form(form) }}
 </html>
 
 {% endblock %}

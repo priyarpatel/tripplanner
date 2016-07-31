@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %} Attraction Results {% endblock %}
+
+{% block content %}
+
+<html>
+    <head> <title> Attractions in the City </title></head>
+<body>
+    <h1>{{table}} Attractions for {{city}}</h1>
+    <!-- <h1>{{table}} Attractions for {{attractions[1]}}</h1> -->
+    <table>
+      <tr>
+        <th>Attraction</th><th>Address</th><th>Price</th>
+        <th>Reservation Required?</th><th>Description</th>
+      </tr>
+      <tr>
+        {% for attraction in attractions %}
+          <tr>
+            {% for value in attraction %}
+            <td>{{value}}</td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tr>
+    </table>
+
+</body>
+</html>
+
+{% endblock %}

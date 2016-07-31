@@ -375,10 +375,6 @@ def editattraction(aid):
     elif request.method=="GET":
         return render_template('editattraction.html', form=form)
 
-@app.route('/attractionsearch')
-def attrsearch():
-    return render_template('attractionsearch.html')
-
 class editccForm(Form):
     name_on_card = StringField('Name', validators=[Required()])
     credit_card_number = StringField('Credit Card Number', validators=[Required('Please enter your credit card number.')])
@@ -745,6 +741,59 @@ class editprofForm(Form):
     zipcode = StringField('Zip Code', validators=[Required()])
     country = StringField('Country', validators=[Required()])
     submit = SubmitField('Submit')
+
+class attractionSearchForm(Form):
+    city = StringField('City', [validators.AnyOf(message = "Not a valid city", values = ["Metz",
+        "Paris", "Amsterdam"])])
+    submit = SubmitField('Search')
+
+@app.route('/attractionsearch', methods=['GET', 'POST'])
+def attrsearch():
+    city = None
+    cursor = db.cursor()
+    cursor.execute("select distinct city from attraction")
+    form = attractionSearchForm()
+
+    if request.method == "POST" and form.validate_on_submit():
+        city = form.city.data
+        #cursor.execute("select name, street_no, street, city, state, zip, description, " +
+            #"nearest_pub_transit, price, reservation_required from attraction where city = %s ", (city))
+        cursor.execute("select name, street_no, street, city, country, zip, price, reservation_required, description from attraction where city = %s", (city))
+        attractions1=cursor.fetchall()
+        column_names=[desc[0] for desc in cursor.description]
+        cursor.close()
+        attractions = []
+
+        for a in attractions1:
+            address = ""
+            for x in range(1,6):
+                if (a[x] != None) and (a[x] != "NULL") :
+                    address += str(a[x]) + " "
+            #address = str(a[1]) + " " + a[2] + ", " + a[3] + ", " + a[4] + " " + a[5]
+            #return address
+            if float(a[6]) == 0:
+                price = "Free"
+            else:
+                price = a[6]
+            if float(a[7]) == 0:
+                res_req = "No"
+            else:
+                res_req = "Yes"
+            a1 = (a[0], address, price, res_req, a[8])
+            #return a1
+            attractions.append(a1)
+            #return address
+        #return str(attractions[0][1])
+        return render_template('attractionresults.html', city=city, attractions=attractions,
+            columns=column_names)
+    else:
+        cursor.close()
+        return render_template('attractionsearch.html', form = form)
+
+@app.route('/attractionresults')
+def attractionresults(city):
+    return render_template('attractionresults.html', form=form)
+
 
 @app.route('/browse_db')
 def browse_db():
