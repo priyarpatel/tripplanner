@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %} Book Activity {% endblock %}
+{% block content %}
+
+<html>
+    <head> <title> Book Activity</title></head>
+    <h1/>Book Activity for {{name}}</h1>
+    <p>Address: {{address}}</p>
+    <p>Nearest Public Transportation: {{npt}}</p>
+    <p>Price: {{price}} Euros</p>
+    {% if required %}
+        <p> A reservation is required. Please pick a time slot.</p>
+    {% else %}
+        <p> A reservation is NOT required. Pick your own time to visit!</p>
+    {% endif %}
+    {% for message in get_flashed_messages() %}
+        <div class="flash">{{ message }}</div>
+    {% endfor %}
+    {% import "bootstrap/wtf.html" as wtf %}
+    {{ wtf.quick_form(form) }}
+</html>
+
+{% endblock %}

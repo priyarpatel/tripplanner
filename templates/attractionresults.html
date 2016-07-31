@@ -12,6 +12,7 @@
       <tr>
         <th>Attraction</th><th>Address</th><th>Price</th>
         <th>Reservation Required?</th><th>Description</th>
+        <th>Add</th>
       </tr>
       <tr>
         {% for attraction in attractions %}
@@ -19,6 +20,7 @@
             {% for value in attraction %}
             <td>{{value}}</td>
             {% endfor %}
+            <td><p><a href="attractiondetails/{{attraction[0]}}">Add to Trip</a></p></td>
           </tr>
         {% endfor %}
       </tr>

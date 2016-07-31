@@ -794,6 +794,65 @@ def attrsearch():
 def attractionresults(city):
     return render_template('attractionresults.html', form=form)
 
+class addActivityForm(Form):
+    slots = SelectField('Available Time Slots', choices = [])
+    start = StringField("Activity Start")
+    end = StringField("Activity End")
+    numVisiting = StringField("Quantity")
+    submit = SubmitField('Add Activity')
+
+@app.route('/attractiondetails/<name>', methods=['GET', 'POST'])
+def attractiondetails(name):
+    cursor = db.cursor()
+    form = addActivityForm()
+    cursor.execute("select start_time, stop_time, slot_quantity from attraction join time_slot " +
+             "using (attraction_id) where attraction.name = %s", (name))
+    aList = [(tup[0], tup[0]) for tup in cursor.fetchall()]
+    choices = [(" ", " ")] + aList
+    if len(aList) == 0:
+        del form.slots
+        required = "Yes"
+    else:
+        form.slots.choices = choices
+        for tup in cursor.fetchall():
+            start = tup[0]
+            availableQuantity = tup[2]
+            if form.slots.data == start:
+                return "match"
+        del form.start
+        del form.end
+        required = None
+    cursor.execute("select street_no, street, city, zip, country, description, nearest_pub_transit, " +
+        "price, reservation_required from attraction where name = %s", (name))
+    entry = cursor.fetchone()
+    address = ""
+    for x in range(0,5):
+        if (entry[x] != None) and (entry[x] != "NULL") :
+            address += str(entry[x]) + " "
+        des = entry[5]
+    npt = entry[6]
+    price = entry[7]
+    required = entry[8]
+    if request.method == "POST":
+        slot = form.slots.data.split(" ");
+        date = slot[0].split("-")
+        year = date[0]
+        month = date[1]
+        day = date[2]
+        time = slot[1].split(":")
+        hour = time[0]
+        minute = time[1]
+        cursor.execute("select slot_quantity from time_slot join attraction using (attraction_id) where name = %s and year(start_time) = %s " +
+            "and month(start_time) = %s and day(start_time) = %s and hour(start_time) = %s" +
+            " and minute(start_time) = %s", (name, year, month, day, hour, minute))
+        q = cursor.fetchone()
+        if int(form.numVisiting.data) < q[0]:
+            return "Form posted"
+    else:
+        return render_template('attractiondetails.html', form=form, name=name, address=address,
+            required=required, npt=npt, price=price)
+
+
 
 @app.route('/browse_db')
 def browse_db():
