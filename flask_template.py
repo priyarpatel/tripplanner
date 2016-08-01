@@ -796,8 +796,9 @@ def attractionresults(city):
 
 class addActivityForm(Form):
     slots = SelectField('Available Time Slots', choices = [])
-    start = StringField("Activity Start")
-    end = StringField("Activity End")
+    addToTrip = SelectField("Select a trip to add to", choices = [])
+    start = StringField("Activity Start Time (HH:MM)")
+    end = StringField("Activity End Time (HH:MM)")
     numVisiting = StringField("Quantity")
     submit = SubmitField('Add Activity')
 
@@ -805,23 +806,7 @@ class addActivityForm(Form):
 def attractiondetails(name):
     cursor = db.cursor()
     form = addActivityForm()
-    cursor.execute("select start_time, stop_time, slot_quantity from attraction join time_slot " +
-             "using (attraction_id) where attraction.name = %s", (name))
-    aList = [(tup[0], tup[0]) for tup in cursor.fetchall()]
-    choices = [(" ", " ")] + aList
-    if len(aList) == 0:
-        del form.slots
-        required = "Yes"
-    else:
-        form.slots.choices = choices
-        for tup in cursor.fetchall():
-            start = tup[0]
-            availableQuantity = tup[2]
-            if form.slots.data == start:
-                return "match"
-        del form.start
-        del form.end
-        required = None
+    required = None
     cursor.execute("select street_no, street, city, zip, country, description, nearest_pub_transit, " +
         "price, reservation_required from attraction where name = %s", (name))
     entry = cursor.fetchone()
@@ -829,28 +814,82 @@ def attractiondetails(name):
     for x in range(0,5):
         if (entry[x] != None) and (entry[x] != "NULL") :
             address += str(entry[x]) + " "
-        des = entry[5]
+    attrCity = entry[2]
+    des = entry[5]
     npt = entry[6]
     price = entry[7]
-    required = entry[8]
-    if request.method == "POST":
-        slot = form.slots.data.split(" ");
-        date = slot[0].split("-")
-        year = date[0]
-        month = date[1]
-        day = date[2]
-        time = slot[1].split(":")
-        hour = time[0]
-        minute = time[1]
-        cursor.execute("select slot_quantity from time_slot join attraction using (attraction_id) where name = %s and year(start_time) = %s " +
-            "and month(start_time) = %s and day(start_time) = %s and hour(start_time) = %s" +
-            " and minute(start_time) = %s", (name, year, month, day, hour, minute))
-        q = cursor.fetchone()
-        if int(form.numVisiting.data) < q[0]:
-            return "Form posted"
+    if entry[8] == 1:
+        required = "Yes"
+    cursor.execute("select attraction_id from attraction where name = %s", (name))
+    a_id = cursor.fetchone()[0]
+    user = session['email']
+    cursor.execute("select start_date from trip where email = %s", (user))
+    tripTemp = [(tup[0], tup[0]) for tup in cursor.fetchall()]
+    tripChoices = [(" ", " ")] + tripTemp
+    form.addToTrip.choices = tripChoices
+    cursor.execute("select start_time, stop_time, slot_quantity from attraction join time_slot " +
+             "using (attraction_id) where attraction.name = %s", (name))
+    aList = [(tup[0], tup[0]) for tup in cursor.fetchall()]
+    choices = [(" ", " ")] + aList
+    if len(aList) == 0:
+        del form.slots
+        if request.method == "POST":
+            date1 = form.addToTrip.data.split(" ")
+            actDate = date1[0]
+            cursor.execute("select trip_id from trip where email = %s and start_date = %s", 
+                (user, form.addToTrip.data))
+            t_id = cursor.fetchone()[0]
+            cursor.execute('select city from trip where trip_id = %s', (t_id))
+            tripCity = cursor.fetchone()[0]
+            if tripCity == attrCity:
+                cursor.execute("insert into activity (start_time, stop_time, activity_date, attraction_id, trip_id) " +
+                    "values (%s, %s, %s, %s, %s)", (form.start.data, form.end.data, actDate, a_id, t_id))
+                cursor.close()
+                flash("Activity Made")
+                return redirect(url_for('home'))
+            else:
+                flash("Cannot add activity for an attraction not in " + tripCity)
+                return render_template('attractiondetails.html', form=form, address=address, npt=npt,
+                    required=required, price=price, name=name)
+        else:
+            cursor.close()
+            return render_template('attractiondetails.html', form=form, address=address, npt=npt,
+                required=required, price=price, name=name)
     else:
-        return render_template('attractiondetails.html', form=form, name=name, address=address,
-            required=required, npt=npt, price=price)
+        form.slots.choices = choices
+        del form.start
+        del form.end
+        if request.method == "POST":
+            slot = form.slots.data.split(" ");
+            date = slot[0].split("-")
+            year = date[0]
+            month = date[1]
+            day = date[2]
+            time = slot[1].split(":")
+            hour = time[0]
+            minute = time[1]
+            cursor.execute("select slot_quantity, start_time, stop_time from time_slot join attraction using (attraction_id) where name = %s and year(start_time) = %s " + 
+                "and month(start_time) = %s and day(start_time) = %s and hour(start_time) = %s" +
+                " and minute(start_time) = %s", (name, year, month, day, hour, minute))
+            q = cursor.fetchone()
+            if int(form.numVisiting.data) < q[0]:
+                cursor.execute("insert into reservations (attraction_id, slots_booked, start_time, " +
+                    "stop_time) values (%s, %s, %s, %s)", (a_id, q[0], q[1], q[2]))
+                newSlotQuantity = q[0] - int(form.numVisiting.data)
+                cursor.execute("update time_slot set slot_quantity = %s where attraction_id = %s " +
+                    "and start_time = %s", (newSlotQuantity, a_id, q[1]))
+                cursor.close()
+                flash("Reservation and Activity Made")
+                return redirect(url_for('home'))
+            else:
+                cursor.close()
+                flash("Not enough available slots for your request")
+                return render_template('attractiondetails.html', form=form, name=name, address=address, 
+                    required=required, npt=npt, price=price)
+        else:
+            cursor.close()
+            return render_template('attractiondetails.html', form=form, name=name, address=address, 
+                required=required, npt=npt, price=price)
 
 
 
